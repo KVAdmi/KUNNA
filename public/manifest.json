@@ -1,11 +1,11 @@
 {
-  "name": "Zinha",
-  "short_name": "Zinha",
-  "id": "com.zinha.app",
-  "description": "App integral de seguridad y bienestar para mujeres en México",
+  "name": "KUNNA",
+  "short_name": "KUNNA",
+  "id": "com.kunna.app",
+  "description": "Bienestar + seguridad + acompañamiento para mujeres",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#382a3c",no
+  "background_color": "#382a3c",
   "theme_color": "#f5e6ff",
   "orientation": "portrait",
   "scope": "/",
@@ -17,32 +17,38 @@
   },
   "screenshots": [
     {
-      "src": "/images/logo-zinha.png",
+      "src": "/images/logo_kunna.png",
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Zinha App - Pantalla Principal"
+      "label": "KUNNA App - Pantalla Principal"
     },
     {
-      "src": "/images/logo-zinha.png",
+      "src": "/images/logo_kunna.png",
       "sizes": "750x1334",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Zinha App - Móvil"
+      "label": "KUNNA App - Móvil"
     }
   ],
   "icons": [
     {
-      "src": "/images/logo-zinha.png",
+      "src": "/images/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/images/logo-zinha.png", 
+      "src": "/images/icon-512.png", 
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/images/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
   "categories": ["lifestyle", "health", "security"],
@@ -52,14 +58,14 @@
       "short_name": "Auxilio",
       "description": "Activar botón de pánico",
       "url": "/?action=auxilio",
-      "icons": [{"src": "/images/logo-zinha.png", "sizes": "96x96"}]
+      "icons": [{"src": "/images/icon-192.png", "sizes": "192x192"}]
     },
     {
       "name": "Acompañamiento",
       "short_name": "Acompañar",
       "description": "Activar seguimiento en tiempo real",
       "url": "/?action=acompanar",
-      "icons": [{"src": "/images/logo-zinha.png", "sizes": "96x96"}]
+      "icons": [{"src": "/images/icon-192.png", "sizes": "192x192"}]
     }
   ],
   "permissions": [
