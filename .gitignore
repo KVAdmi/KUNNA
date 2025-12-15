@@ -3,17 +3,40 @@ dist/
 .env
 .DS_Store
 .vscode/
-# --- secretos y archivos sensibles ---
+
+# --- 🔐 SECRETOS Y CREDENCIALES (NUNCA COMMITEAR) ---
 .env
 .env.*
+.env.local
+.env.production
 *.pem
 *.p12
 *.jks
 *.keystore
 
-# Supabase (archivos temporales)
+# OAuth y API Keys
+KEYS/
+*_secret_*.json
+client_secret_*.json
+service-account*.json
+*-credentials.json
+GOOGLE_OAUTH_SETUP.md
+
+# Certificados SSL/TLS
+*.crt
+*.key
+*.cert
+*.ca-bundle
+
+# Tokens y configuraciones privadas
+.npmrc
+.yarnrc
+auth.json
+
+# Supabase (archivos temporales y secretos)
 supabase/.temp/
 supabase/.branches/
+supabase/config.toml
 
 # Firebase (si los tienes, mejor no subirlos)
 android/app/google-services.json
@@ -23,4 +46,23 @@ ios/GoogleService-Info.plist
 config-jitsi/
 jitsi-meet/
 branding/
+
+# --- 🧪 ARCHIVOS DE PRUEBA Y TEMPORALES ---
+*.log
+*.tmp
+*.bak
+*~
+.cache/
+.temp/
+
+# Keystores de Android
+android/keystore.properties
+android/*.jks
+android/*.keystore
+zinhastore.jks
+
+# Archivos de build locales
+*.apk
+*.aab
+*.ipa
 
