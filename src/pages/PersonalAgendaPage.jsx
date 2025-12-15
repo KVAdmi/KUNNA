@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Helmet } from "react-helmet";
 import supabase from "@/lib/customSupabaseClient";
-import { useAuth } from "@/contexts/SupabaseAuthContext.jsx";
+import { useAuth } from "../contexts/SupabaseAuthContext.jsx";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Calendar as DayPicker } from "@/components/ui/calendar";
@@ -310,8 +310,8 @@ const PersonalAgendaPage = () => {
       }}
     >
       <Helmet>
-        <title>Mi Agenda Personal - Zinha</title>
-        <meta name="description" content="Organiza tu tiempo con la agenda inteligente de Zinha." />
+        <title>Mi Agenda Personal - KUNNA</title>
+        <meta name="description" content="Organiza tu tiempo con la agenda inteligente de KUNNA." />
       </Helmet>
 
       {/* Hero rediseñado para app nativa - compacto */}

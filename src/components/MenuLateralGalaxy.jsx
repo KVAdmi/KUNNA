@@ -59,14 +59,14 @@ export default function MenuLateralGalaxy({
       color: "#8d75838" // Morado medio de tu paleta
     },
     { 
-      label: "Biblioteca Zinha", 
+      label: "Biblioteca KUNNA", 
       href: "/biblioteca", 
       subtitle: "Recursos y lecturas para t...",
       icon: Library,
       color: "#382a3c" // Azul marino de tu paleta
     },
     { 
-      label: "Escucha a Zinha", 
+      label: "Escucha a KUNNA", 
       href: "/podcast", 
       subtitle: "Podcast para abrazarte el...",
       icon: Mic,
@@ -127,7 +127,7 @@ export default function MenuLateralGalaxy({
                       backgroundClip: 'text'
                     }}
                   >
-                    Explora Zinha
+                    Explora KUNNA
                   </span>
                   
                   {/* Icono de casita elegante para ir a home */}

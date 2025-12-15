@@ -1,321 +1,35 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seguimiento en Tiempo Real - Zinha</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Questrial:wght@400&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --rose-dust: #c8a6a6;
-            --mauve-purple: #8d7583;
-            --lime-green: #c1d43a;
-            --dark-plum: #382a3c;
-            --light-lavender: #f5e6ff;
-            --white: #ffffff;
-            --navy: #23253a;
-            --glass-white: rgba(255,255,255,0.85);
-            --shadow-soft: 0 8px 32px rgba(56, 42, 60, 0.08);
-            --shadow-strong: 0 16px 48px rgba(56, 42, 60, 0.13);
-        }
-        body {
-            font-family: 'Questrial', sans-serif;
-            background: linear-gradient(135deg, var(--light-lavender) 0%, var(--rose-dust) 100%);
-            min-height: 100vh;
-            color: var(--dark-plum);
-            margin: 0;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 32px 12px 24px 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 32px;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 0;
-        }
-        .brand-title {
-            font-size: 2.6rem;
-            font-weight: 600;
-            color: var(--dark-plum);
-            letter-spacing: 1px;
-        }
-        .brand-subtitle {
-            font-size: 1.1rem;
-            color: var(--mauve-purple);
-            opacity: 0.8;
-            margin-bottom: 10px;
-        }
-        .accent-line {
-            width: 60px;
-            height: 4px;
-            background: linear-gradient(90deg, var(--lime-green), var(--rose-dust));
-            margin: 0 auto 10px auto;
-            border-radius: 2px;
-        }
-        .main-cards {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 24px;
-            justify-content: center;
-        }
-        .card {
-            background: var(--glass-white);
-            border-radius: 22px;
-            box-shadow: var(--shadow-strong);
-            padding: 28px 24px;
-            min-width: 260px;
-            flex: 1 1 260px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-        }
-        .card.map {
-            flex: 2 1 500px;
-            min-width: 340px;
-            padding: 0;
-            overflow: hidden;
-            position: relative;
-        }
-        .card.contacto {
-            border-left: 6px solid var(--lime-green);
-            background: linear-gradient(120deg, var(--white) 60%, var(--light-lavender) 100%);
-        }
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.1rem;
-            font-weight: 500;
-        }
-        .status-dot {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            box-shadow: 0 0 10px rgba(193, 212, 58, 0.3);
-        }
-        .status-dot.active { background: var(--lime-green); }
-        .status-dot.inactive { background: var(--mauve-purple); }
-        .status-dot.loading { background: var(--rose-dust); }
-        .info-label {
-            font-size: 0.95rem;
-            color: var(--mauve-purple);
-            font-weight: 600;
-        }
-        .info-value {
-            font-size: 1.1rem;
-            color: var(--dark-plum);
-            font-weight: 400;
-        }
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 18px 32px;
-            width: 100%;
-        }
-        .info-item {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-        .contacto-title {
-            font-size: 1.1rem;
-            color: var(--lime-green);
-            font-weight: 700;
-            margin-bottom: 6px;
-        }
-        .contacto-valor {
-            font-size: 1.2rem;
-            color: var(--dark-plum);
-            font-weight: 500;
-        }
-        .map-header {
-            text-align: center;
-            padding: 18px 0 0 0;
-        }
-        .map-title {
-            font-size: 1.2rem;
-            color: var(--dark-plum);
-            font-weight: 600;
-        }
-        .map-subtitle {
-            color: var(--mauve-purple);
-            font-size: 1rem;
-        }
-        #map {
-            width: 100%;
-            height: 400px;
-            border-radius: 0 0 22px 22px;
-            border: none;
-        }
-        .loading-spinner {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 400px;
-            flex-direction: column;
-            gap: 20px;
-        }
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid var(--light-lavender);
-            border-top: 4px solid var(--lime-green);
-            border-radius: 50%;
-            animation: spin 1.2s ease-in-out infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .error-message {
-            background: linear-gradient(145deg, #ffe1e6, #ffc1cc);
-            color: var(--dark-plum);
-            padding: 18px;
-            border-radius: 12px;
-            text-align: center;
-            margin: 18px 0;
-            border-left: 4px solid var(--mauve-purple);
-            box-shadow: var(--shadow-soft);
-        }
-        .last-update {
-            text-align: right;
-            color: var(--mauve-purple);
-            font-size: 0.95rem;
-            margin-top: 10px;
-            padding: 8px 0;
-        }
-        .update-badge {
-            display: inline-block;
-            background: var(--lime-green);
-            color: var(--dark-plum);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            margin-left: 8px;
-        }
-        @media (max-width: 900px) {
-            .main-cards { flex-direction: column; gap: 18px; }
-            .card.map { min-width: 0; }
-        }
-        @media (max-width: 600px) {
-            .container { padding: 10px 2px; }
-            .main-cards { flex-direction: column; gap: 12px; }
-            .card { padding: 16px 8px; }
-            #map, .loading-spinner { height: 250px; }
-            .info-grid { grid-template-columns: 1fr; gap: 10px; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seguimiento en Tiempo Real - Zinha</title>
+  <base href="/" />
+  <link rel="stylesheet" href="/tracking/tracking.css">
+  <script defer src="./assets/tracking-scripts.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA4CG7jJMJl7VqwDQ_pOPvFaOMrnkIGQIk&callback=initMap" async></script>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1 class="brand-title">Zinha Tracking</h1>
-            <p class="brand-subtitle">Seguimiento seguro en tiempo real</p>
-            <div class="accent-line"></div>
-        </div>
-        <div class="main-cards">
-            <div class="card">
-                <div class="status-indicator">
-                    <div class="status-dot loading" id="statusDot"></div>
-                    <span id="statusText">Cargando seguimiento...</span>
-                </div>
-                <div class="info-grid" id="infoGrid" style="display: none;">
-                    <div class="info-item">
-                        <span class="info-label">Inicio acompañamiento:</span>
-                        <span class="info-value" id="inicioSeguimiento">--</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Destino:</span>
-                        <span class="info-value" id="destino">--</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Contacto de emergencia:</span>
-                        <span class="info-value" id="contactoEmergencia">--</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Última actualización:</span>
-                        <span class="info-value" id="ultimaActualizacion">--</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Hora de consulta:</span>
-                        <span class="info-value" id="updateTime">--</span>
-                    </div>
-                </div>
-            </div>
-            <div class="card contacto">
-                <div class="contacto-title">Contacto de emergencia</div>
-                <div class="contacto-valor" id="contactoEmergencia">--</div>
-            </div>
-            <div class="card map">
-                <div class="map-header">
-                    <div class="map-title">Ubicación en Tiempo Real</div>
-                    <div class="map-subtitle">Posición actual y ruta recorrida</div>
-                </div>
-                <div class="loading-spinner" id="loadingMap">
-                    <div class="spinner"></div>
-                    <div class="loading-text">Cargando mapa...</div>
-                </div>
-                <div id="map"></div>
-                <div class="error-message" id="errorMessage" style="display: none;">
-                    No se pudo cargar el seguimiento. Verifica que el enlace sea válido.
-                </div>
-            </div>
-        </div>
-        <!-- Eliminado updateTimeFooter, ahora se usa updateTime en el grid -->
+
+  <!-- El div 'root' donde se montará nuestra aplicación de React -->
+  <div id="root">
+    <!-- Mensaje de carga inicial para el usuario -->
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <div>Iniciando sistema de seguimiento seguro...</div>
     </div>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-// ...toda la lógica JS igual a tracking_fixed.html...
+  </div>
 
-    // Sobrescribir updateTrackingInfo para llenar todos los campos nuevos
-    function updateTrackingInfo(data) {
-        const seguimiento = data.seguimiento;
-        const statusDot = document.getElementById('statusDot');
-        const statusText = document.getElementById('statusText');
-
-        if (seguimiento.activo) {
-            statusDot.className = 'status-dot active';
-            statusText.textContent = 'Seguimiento activo';
-        } else {
-            statusDot.className = 'status-dot inactive';
-            statusText.textContent = 'Seguimiento finalizado';
-        }
-
-        // Horas de inicio y fin con min y seg
-        document.getElementById('inicioSeguimiento').textContent = seguimiento.inicio ? new Date(seguimiento.inicio).toLocaleString('es-ES', { hour12: false }) : '--';
-        document.getElementById('finAcompanamiento').textContent = seguimiento.fin ? new Date(seguimiento.fin).toLocaleString('es-ES', { hour12: false }) : '--';
-
-        document.getElementById('destino').textContent = seguimiento.destino || '--';
-        document.getElementById('contactoEmergencia').textContent = seguimiento.contacto_emergencia || '--';
-        document.getElementById('contactoEmergenciaGrid').textContent = seguimiento.contacto_emergencia || '--';
-
-        // Ubicación actual
-        if (seguimiento.ubicacion_actual) {
-            document.getElementById('latitudActual').textContent = seguimiento.ubicacion_actual.latitud ? Number(seguimiento.ubicacion_actual.latitud).toFixed(6) : '--';
-            document.getElementById('longitudActual').textContent = seguimiento.ubicacion_actual.longitud ? Number(seguimiento.ubicacion_actual.longitud).toFixed(6) : '--';
-            document.getElementById('precisionMetros').textContent = seguimiento.ubicacion_actual.precision ? seguimiento.ubicacion_actual.precision + ' m' : '--';
-            document.getElementById('ultimaActualizacionUbicacion').textContent = seguimiento.ubicacion_actual.timestamp ? new Date(seguimiento.ubicacion_actual.timestamp).toLocaleString('es-ES', { hour12: false }) : '--';
-        } else {
-            document.getElementById('latitudActual').textContent = '--';
-            document.getElementById('longitudActual').textContent = '--';
-            document.getElementById('precisionMetros').textContent = '--';
-            document.getElementById('ultimaActualizacionUbicacion').textContent = '--';
-        }
-
-        // Badge de última consulta
-        if (document.getElementById('updateTimeFooter')) {
-            document.getElementById('updateTimeFooter').textContent = new Date().toLocaleTimeString('es-ES', { hour12: false });
-        }
+  <!-- Script para inicializar Google Maps -->
+  <script>
+    function initMap() {
+      console.log("Google Maps API cargada correctamente.");
+      // Aquí puedes agregar la lógica para inicializar el mapa
     }
+  </script>
 
-    // Sobrescribir la función global para que TrackingViewer la use
-    window.updateTrackingInfo = updateTrackingInfo;
-    </script>
+  <!-- El script de entrada que inicia toda la lógica de React -->
+  <script type="module" src="/src/tracking-main.jsx"></script>
 </body>
 </html>
+

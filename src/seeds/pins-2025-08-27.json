@@ -1,0 +1,27 @@
+{
+  "version": "1",
+  "default_room": "zinha-sala-general",
+  "notes": "Pines seed temporales. Role=moderator. Campo room='*' aplica a cualquier sala.",
+  "pins": [
+    { "pin": "ZIN-8Z3K2MNA", "room": "*", "role": "moderator", "active": true },
+    { "pin": "ZIN-R4Q9T6PL", "room": "*", "role": "moderator", "active": true },
+    { "pin": "ZIN-V7H2C9JD", "room": "*", "role": "moderator", "active": true },
+    { "pin": "ZIN-M5X8L2QW", "room": "*", "role": "moderator", "active": true },
+    { "pin": "ZIN-T9D3P6YR", "room": "*", "role": "moderator", "active": true },
+    { "pin": "ZIN-K2F7N8HB", "room": "*", "role": "moderator", "active": true },
+    { "pin": "ZIN-Q6J4Z1MV", "room": "*", "role": "moderator", "active": true },
+    { "pin": "ZIN-P3R8W5LT", "room": "*", "role": "moderator", "active": true },
+    { "pin": "ZIN-H9C2V7QK", "room": "*", "role": "moderator", "active": true },
+    { "pin": "ZIN-D7L5X3NP", "room": "*", "role": "moderator", "active": true },
+    { "pin": "ZIN-Z4W9M2HF", "room": "*", "role": "moderator", "active": true },
+    { "pin": "ZIN-B8Q6T1JR", "room": "*", "role": "moderator", "active": true },
+    { "pin": "ZIN-N2K7P5LX", "room": "*", "role": "moderator", "active": true },
+    { "pin": "ZIN-L6M3D9QV", "room": "*", "role": "moderator", "active": true },
+    { "pin": "ZIN-J1V8H4CZ", "room": "*", "role": "moderator", "active": true },
+    { "pin": "ZIN-Y5R2W8KM", "room": "*", "role": "moderator", "active": true },
+    { "pin": "ZIN-C9T4L7JP", "room": "*", "role": "moderator", "active": true },
+    { "pin": "ZIN-W3H6Q2ZN", "room": "*", "role": "moderator", "active": true },
+    { "pin": "ZIN-G7P1X9LD", "room": "*", "role": "moderator", "active": true },
+    { "pin": "ZIN-S2N5M8QJ", "room": "*", "role": "moderator", "active": true }
+  ]
+}

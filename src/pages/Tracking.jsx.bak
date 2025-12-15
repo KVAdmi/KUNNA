@@ -1,0 +1,351 @@
+import { useEffect, useRef, useState } from 'react'
+import { createClient } from '@supabase/supabase-js'
+
+// Importar variables de entorno de manera segura
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+
+import { useEffect, useRef, useState } from 'react'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
+
+function getToken() {
+  const p = location.pathname
+  if (p.includes('/tracking/')) return p.split('/tracking/')[1].split(/[?#]/)[0]
+  if (p.startsWith('/track_')) return p.slice('/track_'.length).split(/[?#]/)[0]
+  return new URLSearchParams(location.search).get('t') || ''
+}
+
+export default function Tracking(){
+  const [info, setInfo] = useState({})
+  const mapRef = useRef(null)
+  const markerRef = useRef(null)
+  const pathRef = useRef([])
+  const polyRef = useRef(null)
+
+  // Espera a que Google Maps cargue
+  useEffect(() => {
+    const t = setInterval(() => {
+      if (!mapRef.current && window.google?.maps) {
+        mapRef.current = new google.maps.Map(document.getElementById('map'), {
+          center: { lat: 19.4326, lng: -99.1332 }, zoom: 14, disableDefaultUI: true
+        })
+        markerRef.current = new google.maps.Marker({ position: mapRef.current.getCenter(), map: mapRef.current })
+        polyRef.current = new google.maps.Polyline({ path: [], strokeOpacity: 1, strokeWeight: 3, map: mapRef.current })
+      }
+      if (mapRef.current) clearInterval(t)
+    }, 200)
+    return () => clearInterval(t)
+  }, [])
+
+  // Polling a Supabase
+  useEffect(() => {
+    const token = getToken()
+    if (!token) return
+
+    const fetchData = async () => {
+      const { data, error } = await supabase
+        .from('acompanamientos_activos')
+        .select('inicio, fin, activo, destino, contacto_emergencia, latitud_actual, longitud_actual, updated_at')
+        .eq('token', token)
+        .single()
+      if (error || !data) return
+      setInfo(data)
+
+      const lat = parseFloat(data.latitud_actual)
+      const lng = parseFloat(data.longitud_actual)
+      if (isFinite(lat) && isFinite(lng) && mapRef.current) {
+        const pos = { lat, lng }
+        markerRef.current.setPosition(pos)
+        mapRef.current.setCenter(pos)
+        pathRef.current.push(pos)
+        polyRef.current.setPath(pathRef.current)
+      }
+    }
+
+    const timer = setInterval(fetchData, 3000)
+    fetchData()
+    return () => clearInterval(timer)
+  }, [])
+
+  return (
+    <div style={{maxWidth:900, margin:'0 auto', padding:'24px'}}>
+      <img src="/branding/logo-zinha.png" alt="Logo Zinha" style={{height:28, display:'block', margin:'16px auto'}} />
+      <h1>Zinha Tracking</h1>
+      <div style={{padding:'12px', border:'1px solid #ddd', borderRadius:12, background:'#fff'}}>
+        <div>Seguimiento activo.</div>
+        <div>Última actualización: {info?.updated_at || '--'}</div>
+      </div>
+      <div style={{marginTop:16}}>
+        <div id="map" style={{height:'380px', borderRadius:12}} />
+      </div>
+    </div>
+  )
+}
+
+function getToken() {
+  const p = location.pathname;
+  if (p.includes('/tracking/')) return p.split('/tracking/')[1].split(/[?#]/)[0];
+  if (p.startsWith('/track_')) return p.slice('/track_'.length).split(/[?#]/)[0];
+  return new URLSearchParams(location.search).get('t') || '';
+}
+
+function Tracking() {
+  const [trackingData, setTrackingData] = useState(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const mapRef = useRef(null);
+  const markerRef = useRef(null);
+  const polylineRef = useRef(null);
+
+  // Cargar Google Maps script dinámicamente
+  useEffect(() => {
+    if (!GOOGLE_MAPS_API_KEY) {
+      console.error('No se encontró la API key de Google Maps');
+      return;
+    }
+
+    if (!window.google) {
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=geometry&v=weekly&loading=async`;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => setMapLoaded(true);
+      script.onerror = (error) => console.error('Error cargando Google Maps:', error);
+      document.head.appendChild(script);
+      return () => {
+        if (script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
+      };
+    } else {
+      setMapLoaded(true);
+    }
+  }, []);
+
+  // Inicializar mapa y marcador
+  useEffect(() => {
+    if (!mapLoaded) return;
+    if (!mapRef.current) {
+      mapRef.current = new window.google.maps.Map(document.getElementById('map'), {
+        center: { lat: 20.659698, lng: -103.349609 },
+        zoom: 15,
+        styles: [
+          {
+            featureType: "poi",
+            elementType: "labels",
+            stylers: [{ visibility: "off" }]
+          }
+        ]
+      });
+
+      // Inicializar polyline para la ruta
+      polylineRef.current = new window.google.maps.Polyline({
+        path: [],
+        geodesic: true,
+        strokeColor: "#7a8c4d",
+        strokeOpacity: 0.8,
+        strokeWeight: 3,
+        map: mapRef.current
+      });
+    }
+  }, [mapLoaded]);
+
+  // Cargar y actualizar datos de seguimiento
+  useEffect(() => {
+    const token = getToken();
+    if (!token || !mapLoaded) return;
+
+    let subscription;
+
+    const fetchAndUpdateTracking = async () => {
+      try {
+        console.log('Obteniendo datos para token:', token);
+        const { data, error } = await supabase
+          .from('acompanamientos_activos')
+          .select('*')
+          .eq('token', token)
+          .eq('activo', true)
+          .single();
+
+        if (error) {
+          console.error('Error al obtener datos de Supabase:', error);
+          return;
+        }
+
+        if (!data) {
+          console.error('No se encontraron datos para el token:', token);
+          return;
+        }
+
+        console.log('Datos obtenidos:', data);
+        
+        setTrackingData(data);
+        
+        // Actualizar marcador y mapa
+        if (data.latitud_actual && data.longitud_actual && mapRef.current) {
+          const position = { 
+            lat: parseFloat(data.latitud_actual), 
+            lng: parseFloat(data.longitud_actual) 
+          };
+
+          // Actualizar marcador
+          if (!markerRef.current) {
+            markerRef.current = new window.google.maps.Marker({
+              position: position,
+              map: mapRef.current,
+              title: 'Ubicación actual',
+              icon: {
+                url: '/images/marker-green.png',
+                scaledSize: new window.google.maps.Size(32, 32)
+              }
+            });
+          } else {
+            markerRef.current.setPosition(position);
+          }
+
+          // Centrar mapa
+          mapRef.current.setCenter(position);
+
+          // Actualizar ruta
+          if (data.ruta_seguimiento && Array.isArray(data.ruta_seguimiento)) {
+            const path = data.ruta_seguimiento.map(coord => ({
+              lat: parseFloat(coord.lat),
+              lng: parseFloat(coord.lng)
+            }));
+            polylineRef.current.setPath(path);
+          }
+        }
+      } catch (error) {
+        console.error('Error al procesar los datos:', error);
+      }
+
+      if (data) {
+        setTrackingData(data);
+        
+        // Actualizar marcador y mapa
+        if (data.latitud_actual && data.longitud_actual && mapRef.current) {
+          const position = { 
+            lat: parseFloat(data.latitud_actual), 
+            lng: parseFloat(data.longitud_actual) 
+          };
+
+          // Actualizar marcador
+          if (!markerRef.current) {
+            markerRef.current = new window.google.maps.Marker({
+              position: position,
+              map: mapRef.current,
+              title: 'Ubicación actual',
+              icon: {
+                url: '/images/marker-green.png',
+                scaledSize: new window.google.maps.Size(32, 32)
+              }
+            });
+          } else {
+            markerRef.current.setPosition(position);
+          }
+
+          // Centrar mapa
+          mapRef.current.setCenter(position);
+
+          // Actualizar ruta
+          if (data.ruta_seguimiento && Array.isArray(data.ruta_seguimiento)) {
+            const path = data.ruta_seguimiento.map(coord => ({
+              lat: parseFloat(coord.lat),
+              lng: parseFloat(coord.lng)
+            }));
+            polylineRef.current.setPath(path);
+          }
+        }
+      }
+    };
+
+    // Suscribirse a cambios en tiempo real
+    subscription = supabase
+      .channel('tracking_changes')
+      .on('postgres_changes', 
+        { event: 'UPDATE', 
+          schema: 'public', 
+          table: 'acompanamientos_activos',
+          filter: `token=eq.${token}` 
+        }, 
+        fetchAndUpdateTracking
+      )
+      .subscribe();
+
+    // Cargar datos iniciales
+    fetchAndUpdateTracking();
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, [mapLoaded]);
+
+  if (!trackingData) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <div style={{ textAlign: 'center' }}>
+          <img 
+            src="/branding/logo-zinha.png" 
+            alt="Zinha"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = '/images/logo.png';
+            }}
+            style={{ width: '120px', marginBottom: '1rem' }} 
+          />
+          <p style={{ color: '#382a3c' }}>Cargando datos de seguimiento...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container" style={{ maxWidth: '900px', margin: '0 auto', padding: '1rem' }}>
+      <header style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+        <img src="/branding/logo-zinha.png" alt="Zinha" style={{ width: '100px', marginBottom: '1rem' }} />
+        <h1 style={{ fontSize: '1.5rem', color: '#382a3c', margin: '0.5rem 0' }}>Seguimiento en Tiempo Real</h1>
+      </header>
+
+      <main>
+        <div style={{ background: 'white', borderRadius: '16px', padding: '1.5rem', boxShadow: '0 4px 16px rgba(0,0,0,0.1)', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+            <span style={{ display: 'inline-block', width: '12px', height: '12px', background: trackingData.activo ? '#4CAF50' : '#FF5722', borderRadius: '50%', marginRight: '0.5rem' }}></span>
+            <span style={{ color: '#382a3c', fontWeight: '500' }}>
+              {trackingData.activo ? 'Seguimiento activo' : 'Seguimiento finalizado'}
+            </span>
+          </div>
+
+          <div style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#666' }}>
+            <div><strong>Inicio:</strong> {new Date(trackingData.inicio).toLocaleString()}</div>
+            {trackingData.destino && <div><strong>Destino:</strong> {trackingData.destino}</div>}
+            <div><strong>Última actualización:</strong> {new Date(trackingData.ultima_actualizacion_ubicacion).toLocaleString()}</div>
+            <div><strong>Precisión:</strong> {trackingData.precision_metros}m</div>
+            {trackingData.contacto_emergencia && (
+              <div style={{ marginTop: '0.5rem' }}>
+                <strong>Contacto de emergencia:</strong>
+                <a href={`tel:${trackingData.contacto_emergencia}`} 
+                   style={{ color: '#7a8c4d', textDecoration: 'none', marginLeft: '0.5rem' }}>
+                  {trackingData.contacto_emergencia}
+                </a>
+              </div>
+            )}
+          </div>
+
+          <div id="map" style={{ height: '400px', borderRadius: '8px', marginBottom: '1rem' }}></div>
+
+          {trackingData.latitud_final && trackingData.longitud_final && (
+            <div style={{ fontSize: '0.9rem', color: '#666', padding: '0.5rem', background: '#f5f5f5', borderRadius: '8px' }}>
+              <div><strong>Destino final:</strong></div>
+              <div>Latitud: {trackingData.latitud_final}</div>
+              <div>Longitud: {trackingData.longitud_final}</div>
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+export default Tracking;

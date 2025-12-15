@@ -40,7 +40,7 @@ export const getBaseURL = () => {
   if (isDevelopment()) {
     return import.meta.env.VITE_APP_URL_DEV || 'http://localhost:5173';
   }
-  return import.meta.env.VITE_APP_URL_PROD || 'https://zinha.app';
+  return import.meta.env.VITE_APP_URL_PROD || 'https://kunna.help';
 };
 
 /**
@@ -65,14 +65,13 @@ export const getResetPasswordRedirectURL = () => {
  */
 export const getOAuthRedirectURL = () => {
   const isNative = isNativeApp();
-  const deepLinkScheme = import.meta.env.VITE_DEEP_LINK_SCHEME || 'zinha';
   
   if (isNative) {
+    const deepLinkScheme = import.meta.env.VITE_DEEP_LINK_SCHEME || 'zinha';
     return `${deepLinkScheme}://auth/callback`;
   }
   
-  const baseURL = getBaseURL();
-  return `${baseURL}/`;
+  return 'https://zinha.app/callback';
 };
 
 /**
@@ -87,7 +86,7 @@ export const getEnvironmentInfo = () => {
     resetPasswordURL: getResetPasswordRedirectURL(),
     oauthURL: getOAuthRedirectURL(),
     userAgent: navigator.userAgent,
-    platform: navigator.platform,
+    platform: navigator.platform
   };
 };
 

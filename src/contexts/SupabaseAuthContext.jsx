@@ -7,7 +7,7 @@ import React, {
   useMemo,
 } from 'react';
 
-import supabase from '@/lib/customSupabaseClient';
+import supabase from '../lib/customSupabaseClient.js';
 import { useToast } from '@/components/ui/use-toast';
 import { getResetPasswordRedirectURL, getOAuthRedirectURL } from '@/utils/environment';
 
@@ -99,7 +99,7 @@ export const AuthProvider = ({ children }) => {
       return { error };
     } else {
       toast({
-        title: '¡Bienvenida a Zinha!',
+        title: '¡Bienvenida a KUNNA!',
         description: 'Tu cuenta ha sido creada. Completa tu perfil y procede con el pago para activar tu membresía.',
       });
 
@@ -122,7 +122,8 @@ export const AuthProvider = ({ children }) => {
         data: {
           full_name: username,
           codigo_invitacion_personal: codigo_invitacion,
-          tipo_plan: 'basico',
+          plan_activo: 'free',
+          plan_tipo: 'gratuito',
           created_at: new Date().toISOString(),
         }
       }
@@ -143,30 +144,43 @@ export const AuthProvider = ({ children }) => {
   }, [toast]);
 
   const signIn = useCallback(async (email, password) => {
+    console.log('🔐 Iniciando login para:', email);
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
+    console.log('🔐 Resultado de login:', { data: data?.user?.id, error });
+
     if (data?.user?.id) {
-      const { data: perfilExistente } = await supabase
+      console.log('👤 Usuario logueado, verificando perfil...');
+      
+      const { data: perfilExistente, error: perfilError } = await supabase
         .from("profiles")
-        .select("id")
+        .select("*")
         .eq("id", data.user.id)
         .single();
 
-      if (!perfilExistente) {
-        await supabase.from("profiles").insert({
+      console.log('👤 Perfil encontrado:', { perfil: perfilExistente, error: perfilError });
+
+      if (!perfilExistente && !perfilError) {
+        console.log('👤 Creando nuevo perfil...');
+        const { data: newProfile, error: insertError } = await supabase.from("profiles").insert({
           id: data.user.id,
           email: data.user.email,
           username: data.user.user_metadata?.full_name || "Invitada",
           created_at: new Date().toISOString(),
-          tipo_plan: "basico",
+          plan_activo: "free",
+          plan_tipo: "gratuito",
+          updated_at: new Date().toISOString()
         });
+        console.log('👤 Nuevo perfil creado:', { newProfile, insertError });
       }
     }
 
     if (error) {
+      console.error('❌ Error en login:', error);
       toast({
         variant: "destructive",
         title: "Error al iniciar sesión",

@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet';
 import { FolderHeart as HomeIcon, Phone, Globe, MapPin, Plus, Edit, Loader2, Search, ChevronDown, ChevronUp, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { useAuth } from '@/contexts/SupabaseAuthContext.jsx';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 import supabase from '@/lib/customSupabaseClient';
 
 const SupportDirectoryPage = () => {
@@ -173,7 +173,7 @@ const SupportDirectoryPage = () => {
            background: 'linear-gradient(135deg, #fafafa 0%, #f8f8f8 50%, #f5f5f5 100%)',
          }}>
       <Helmet>
-        <title>Apoyo y Refugios - Zinha</title>
+        <title>Apoyo y Refugios - KUNNA</title>
         <meta name="description" content="Directorio de asociaciones y refugios para encontrar apoyo." />
       </Helmet>
 

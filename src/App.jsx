@@ -2,15 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { AnimatePresence } from 'framer-motion';
-import { useAuth } from '@/contexts/SupabaseAuthContext.jsx';
+import { useAuth } from './contexts/SupabaseAuthContext.jsx';
+import { SOSProvider } from './contexts/SOSContext.jsx';
 import useWindowSize from '@/hooks/useWindowSize.js';
 import ProtectedRoute from '@/components/ProtectedRoute.jsx';
-import FooterBottomNavigation from '@/components/global/FooterBottomNavigation.jsx';
-import DesktopSidebar from '@/components/DesktopSidebar.jsx';
-import MenuPestanaGalaxy from '@/components/MenuPestanaDerecha.jsx';
-import MenuLateralGalaxy from '@/components/MenuLateralGalaxy.jsx';
+import SOSButton from '@/components/SOSButton.jsx';
 import '@/styles/android-fixes.css';
 import '@/styles/mobile-layout-fixes.css';
+import MenuPestanaGalaxy from '@/components/MenuPestanaDerecha';
+import MenuLateralGalaxy from '@/components/MenuLateralGalaxy.jsx';
+import DesktopSidebar from '@/components/DesktopSidebar.jsx';
+import FooterBottomNavigation from '@/components/global/FooterBottomNavigation.jsx';
 
 import ChatRoomPageSimple from '@/pages/ChatRoomPageSimple.jsx';
 import LandingPage from '@/pages/LandingPage.jsx';
@@ -18,7 +20,6 @@ import LoginPage from '@/pages/LoginPage.jsx';
 import RegisterPage from '@/pages/RegisterPage';
 import ResetPasswordPage from '@/pages/ResetPasswordPage.jsx';
 import CompleteProfilePage from '@/pages/CompleteProfilePage.jsx';
-import CertificadoVita365 from '@/pages/CertificadoVita365.jsx';
 import PricingPage from '@/pages/PricingPage.jsx';
 import PaymentSuccessPage from '@/pages/PaymentSuccessPage.jsx';
 import LegalPoliciesPage from '@/pages/LegalPoliciesPage.jsx';
@@ -46,22 +47,10 @@ import AdminDashboard from '@/pages/AdminDashboard.jsx';
 import AdminDashboardCodigos from '@/pages/AdminDashboardCodigos.jsx';
 import DebugGeolocation from '@/pages/DebugGeolocation.jsx';
 import ZinhaInformaPage from '@/pages/ZinhaInformaPage.jsx';
-import Conferencia from '@/pages/Conferencia.tsx';
-import ConferenciaZinha from '@/pages/ConferenciaZinha.tsx';
-import ConferenciaBienvenida from '@/pages/ConferenciaBienvenida.tsx';
-import ConferenciaSala from '@/pages/ConferenciaSala.tsx';
-import ConferenciaSalaZinha from '@/pages/ConferenciaSalaZinha.tsx';
-import ConferenciaClean from '@/pages/ConferenciaClean.tsx';
+import DatabaseTest from '@/components/DatabaseTest.jsx';
+import EmailConfirmationHelper from '@/components/EmailConfirmationHelper.jsx';
+import PublicTracking from '@/pages/PublicTracking.jsx';
 // import S3TestPage from '@/pages/S3TestPage.jsx'; // 🛠️ TEMP: Deshabilitado hasta mover S3 al backend
-
-// Componentes del sistema Vita365
-import RegistroTitular from '@/components/Zinha/RegistroTitular.jsx';
-import AltaBeneficiarioSinApp from '@/components/Zinha/AltaBeneficiarioSinApp.jsx';
-import AltaBeneficiariaConApp from '@/components/Zinha/AltaBeneficiariaConApp.jsx';
-import RegistroBeneficiaria from '@/components/Zinha/RegistroBeneficiaria.jsx';
-import ReemplazarBeneficiario from '@/components/Zinha/ReemplazarBeneficiario.jsx';
-import DashboardTitular from '@/components/Zinha/DashboardTitular.jsx';
-import FormularioBeneficiario from '@/components/Zinha/FormularioBeneficiario.jsx';
 
 // Componentes de administración
 import LoginAdmin from '@/components/LoginAdmin.jsx';
@@ -79,15 +68,6 @@ const AppRoutes = () => (
     {/* Rutas de debug */}
     <Route path="/debug/geolocation" element={<DebugGeolocation />} />
     
-    {/* Rutas del sistema Vita365 */}
-    <Route path="/vita365/registro-titular" element={<RegistroTitular />} />
-    <Route path="/vita365/alta-beneficiario-sin-app" element={<AltaBeneficiarioSinApp />} />
-    <Route path="/vita365/alta-beneficiaria-con-app" element={<AltaBeneficiariaConApp />} />
-    <Route path="/vita365/registro-beneficiaria" element={<RegistroBeneficiaria />} />
-    <Route path="/vita365/reemplazar-beneficiario" element={<ReemplazarBeneficiario />} />
-    <Route path="/vita365/dashboard-titular" element={<DashboardTitular />} />
-    <Route path="/vita365/formulario-beneficiario" element={<FormularioBeneficiario />} />
-    
     {/* Rutas que requieren acceso pagado o código donativo */}
     <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
     <Route path="/seguridad" element={<ProtectedRoute><SecurityModule /></ProtectedRoute>} />
@@ -96,16 +76,6 @@ const AppRoutes = () => (
     <Route path="/comunidad/blog" element={<ProtectedRoute><CommunityBlog /></ProtectedRoute>} />
     <Route path="/comunidad/salas" element={<ProtectedRoute><ChatRooms /></ProtectedRoute>} />
     <Route path="/comunidad/sala/:id" element={<ProtectedRoute><ChatRoomPageSimple /></ProtectedRoute>} />
-    <Route path="/comunidad/videollamadas" element={<ProtectedRoute><Conferencia /></ProtectedRoute>} />
-    <Route path="/conferencia" element={<ProtectedRoute><Conferencia /></ProtectedRoute>} />
-    <Route path="/conferencias" element={<Conferencia />} />
-    <Route path="/conferencia-zinha" element={<ProtectedRoute><ConferenciaZinha /></ProtectedRoute>} />
-    <Route path="/conferencia-zinha-test" element={<ConferenciaZinha />} />
-    <Route path="/conferencia-nueva" element={<ProtectedRoute><ConferenciaBienvenida /></ProtectedRoute>} />
-    <Route path="/conferencia-nueva-test" element={<ConferenciaBienvenida />} />
-    <Route path="/conferencia/sala" element={<ConferenciaSala />} />
-    <Route path="/conferencia-sala-zinha" element={<ConferenciaSalaZinha />} />
-    <Route path="/conferencia-clean" element={<ConferenciaClean />} />
     <Route path="/bienestar" element={<ProtectedRoute><BienestarCompleto /></ProtectedRoute>} />
     {/* Legacy redirects */}
     <Route path="/aprendizaje" element={<Navigate to="/bienestar" replace />} />
@@ -141,14 +111,18 @@ const AuthRoutes = () => {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<Navigate to="/landing" replace />} />
         <Route path="/landing" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/completar-perfil" element={<CompleteProfilePage />} />
-        <Route path="/certificado-vita365" element={<CertificadoVita365 />} />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/legal" element={<LegalPoliciesPage />} />
+        <Route path="/test-db" element={<DatabaseTest />} />
+        <Route path="/confirm-email" element={<EmailConfirmationHelper />} />
+        {/* 🎯 TRACKING PÚBLICO - Sin autenticación requerida */}
+        <Route path="/track/:token" element={<PublicTracking />} />
         <Route path="*" element={<Navigate to="/landing" />} />
       </Routes>
     </AnimatePresence>
@@ -164,6 +138,7 @@ function AppContent() {
 
   const location = useLocation();
   const isAuthPage = ['/landing', '/login', '/register', '/reset-password', '/pricing', '/legal'].includes(location.pathname);
+  const isTrackingPage = location.pathname.startsWith('/track/');
   const isInChatRoom = location.pathname.includes('/comunidad/sala/');
 
   // Efecto para ocultar botón IA en chat rooms
@@ -185,8 +160,18 @@ function AppContent() {
     );
   }
 
-  // Si no hay sesión, mostramos las rutas de autenticación
+  // 🎯 TRACKING PÚBLICO: Permite acceso sin sesión
   if (!session) {
+    // Si es página de tracking, renderizar con Routes pero sin layout
+    if (isTrackingPage) {
+      return (
+        <Routes>
+          <Route path="/track/:token" element={<PublicTracking />} />
+        </Routes>
+      );
+    }
+    
+    // Si no, mostrar rutas de autenticación normales
     return (
       <div className="w-full min-h-screen bg-gradient-to-br from-[#f5e6ff] via-white to-[#f5e6ff]">
         <AuthRoutes />
@@ -198,7 +183,7 @@ function AppContent() {
   return (
     <>
       <Helmet>
-        <title>Zinha - Tu espacio seguro</title>
+        <title>KUNNA – Tu espacio seguro</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet';
 import supabase from '@/lib/customSupabaseClient';
-import { useAuth } from '@/contexts/SupabaseAuthContext.jsx';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { Book, Download, Loader2, BookOpen, Library, Star } from 'lucide-react';
 
@@ -159,7 +159,7 @@ const ZinhaLibrary = () => {
       </div>
 
       <Helmet>
-        <title>Biblioteca Zinha - Tu Espacio de Conocimiento</title>
+        <title>Biblioteca KUNNA - Tu Espacio de Conocimiento</title>
         <meta name="description" content="Descubre una colección cuidadosamente seleccionada de libros para tu crecimiento personal, sanación y empoderamiento." />
       </Helmet>
 
@@ -203,7 +203,7 @@ const ZinhaLibrary = () => {
                 ease: "easeInOut"
               }}
             >
-              Biblioteca Zinha
+              Biblioteca KUNNA
             </motion.h1>
           </div>
           <p className="text-xl text-[#382a3c]/80 max-w-2xl mx-auto leading-relaxed font-medium">
@@ -229,7 +229,7 @@ const ZinhaLibrary = () => {
               <div className="relative max-w-xs">
                 <img 
                   src="/images/Biblioteca.jpg" 
-                  alt="Biblioteca Zinha"
+                  alt="Biblioteca KUNNA"
                   className="w-auto h-auto max-h-80 rounded-3xl shadow-xl group-hover:scale-110 transition-transform duration-700 ease-out"
                 />
                 

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet';
 import supabase from '@/lib/customSupabaseClient';
-import { useAuth } from '@/contexts/SupabaseAuthContext.jsx';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Send, Loader2, AlertCircle, Paperclip, MessageCircle, Smile } from 'lucide-react';
@@ -51,7 +51,7 @@ const ChatRoomPageSimple = () => {
       .from('mensajes_sala')
       .select('*, profile:profiles(id, username, foto_url)')
       .eq('sala_id', sala_id)
-      .order('creado_en', { ascending: true });
+      .order('created_at', { ascending: true });
     if (error) setError('Error cargando mensajes');
     else {
       setMessages(data);
@@ -62,27 +62,16 @@ const ChatRoomPageSimple = () => {
 
   const verificarIngreso = useCallback(async () => {
     if (!user) return;
+    
+    // Simplemente registrar el ingreso sin validaciones complejas
     await supabase.from('usuarios_sala').upsert({
       sala_id,
       user_id: user.id,
       ingreso_en: new Date().toISOString(),
     });
-    const { data: sesionesActivas } = await supabase
-      .from('usuarios_sala')
-      .select('sala_id')
-      .eq('user_id', user.id)
-      .is('salio_en', null);
-    if (sesionesActivas.length > 0 && sesionesActivas[0].sala_id !== sala_id) {
-      toast({
-        variant: 'destructive',
-        title: 'Despídete antes de salir 🫶',
-        description: 'Solo puedes estar en una sala a la vez.',
-      });
-      navigate('/comunidad/salas');
-    } else if (sesionesActivas.length === 0) {
-      setPuedeEnviar(true);
-    }
-  }, [sala_id, user, toast, navigate]);
+    
+    setPuedeEnviar(true);
+  }, [sala_id, user]);
 
   useEffect(() => {
     fetchRoom();
@@ -111,17 +100,38 @@ const ChatRoomPageSimple = () => {
         table: 'mensajes_sala',
         filter: `sala_id=eq.${sala_id}`,
       }, async (payload) => {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id, username, foto_url')
-          .eq('id', payload.new.user_id)
-          .single();
-        setMessages((prev) => [...prev, { ...payload.new, profile }]);
+        // Evitar duplicados (si ya existe el mensaje con ese ID, no agregarlo)
+        setMessages((prev) => {
+          const existe = prev.some(m => m.id === payload.new.id);
+          if (existe) return prev;
+          
+          // Si no existe, agregarlo con el perfil
+          return [...prev, { 
+            ...payload.new, 
+            profile: null // El perfil se cargará después si es necesario
+          }];
+        });
+        
+        // Cargar perfil solo si el mensaje es de otro usuario
+        if (payload.new.user_id !== user?.id) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id, username, foto_url')
+            .eq('id', payload.new.user_id)
+            .single();
+          
+          if (profile) {
+            setMessages((prev) => prev.map(m => 
+              m.id === payload.new.id ? { ...m, profile } : m
+            ));
+          }
+        }
+        
         scrollToBottom();
       })
       .subscribe();
     return () => supabase.removeChannel(channel);
-  }, [sala_id]);
+  }, [sala_id, user]);
 
   // Auto-hide input en scroll up, show en scroll down (Simplificado para móvil)
   useEffect(() => {
@@ -159,19 +169,40 @@ const ChatRoomPageSimple = () => {
       });
       return;
     }
-    const { error } = await supabase.from('mensajes_sala').insert({
+    
+    const nuevoMensaje = {
       id: crypto.randomUUID(),
       sala_id,
       user_id: user.id,
       contenido: newMessage,
-      tipo: 'texto',
-      creado_en: new Date().toISOString(),
+      tipo: 'text',
+      created_at: new Date().toISOString(),
+      profile: {
+        id: user.id,
+        username: user.user_metadata?.username || user.email?.split('@')[0] || 'Usuario',
+        foto_url: user.user_metadata?.foto_url || user.user_metadata?.avatar_url
+      }
+    };
+    
+    // Agregar mensaje inmediatamente (optimistic update)
+    setMessages((prev) => [...prev, nuevoMensaje]);
+    setNewMessage('');
+    setShowInput(true);
+    setTimeout(scrollToBottom, 100);
+    
+    // Guardar en base de datos
+    const { error } = await supabase.from('mensajes_sala').insert({
+      id: nuevoMensaje.id,
+      sala_id: nuevoMensaje.sala_id,
+      user_id: nuevoMensaje.user_id,
+      contenido: nuevoMensaje.contenido,
+      tipo: nuevoMensaje.tipo,
+      created_at: nuevoMensaje.created_at,
     });
-    if (!error) {
-      setNewMessage('');
-      setShowInput(true); // Asegurar que el input esté visible
-      setTimeout(scrollToBottom, 100); // Scroll al final después de enviar
-    } else {
+    
+    if (error) {
+      // Si falla, remover el mensaje optimista
+      setMessages((prev) => prev.filter(m => m.id !== nuevoMensaje.id));
       toast({ variant: 'destructive', title: 'Error', description: 'No se pudo enviar tu mensaje.' });
     }
   };
@@ -208,7 +239,7 @@ const ChatRoomPageSimple = () => {
   return (
     <div className="flex flex-col min-h-[100dvh] bg-gradient-to-br from-[#f5e6ff] via-[#e8d5ff] to-[#dcc4ff]">
       <Helmet>
-        <title>{room?.nombre || 'Sala de Chat'} - Comunidad Zinha</title>
+        <title>{room?.nombre || 'Sala de Chat'} - Comunidad KUNNA</title>
       </Helmet>
 
       {/* Header cuadrado que tapa todo el fondo */}
@@ -345,7 +376,7 @@ const ChatRoomPageSimple = () => {
                       isMe ? 'text-white/60' : 'text-[#382a3c]/50'
                     }`}>
                       <span className="text-xs">
-                        {format(new Date(msg.creado_en), 'HH:mm')}
+                        {format(new Date(msg.created_at), 'HH:mm')}
                       </span>
                     </div>
                   </div>

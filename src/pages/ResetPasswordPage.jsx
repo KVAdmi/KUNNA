@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import BackButton from '@/components/ui/BackButton';
-import { useAuth } from '@/contexts/SupabaseAuthContext.jsx';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { Lock, CheckCircle } from 'lucide-react';
 
@@ -108,8 +108,8 @@ const ResetPasswordPage = () => {
         className="w-full max-w-sm mx-auto text-center glass-effect rounded-3xl p-8 shadow-2xl shadow-brand-accent/10"
       >
         <img
-          src="https://storage.googleapis.com/hostinger-horizons-assets-prod/ce6b3f33-5fa3-4c63-a670-0869d616221b/e28c1dd880094048b81784be4521dd6c.png"
-          alt="Zinha Logo"
+          src="/images/logo_kunna.png"
+          alt="KUNNA Logo"
           className="h-20 mx-auto mb-4"
         />
         

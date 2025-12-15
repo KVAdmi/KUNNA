@@ -1,280 +1,239 @@
-// 🚀 SERVICIO DE GEOLOCALIZACIÓN HÍBRIDO ULTRA-RÁPIDO
-// GPS Nativo PRIMERO + Google API como BACKUP para máxima velocidad y precisión
+// 🚀 SERVICIO DE GEOLOCALIZACIÓN HÍBRIDO ULTRA-RÁPIDO Y RESISTENTE
+// GPS Nativo + Tareas en Segundo Plano para máxima fiabilidad.
+
+import supabase from './customSupabaseClient';
+import { Capacitor } from '@capacitor/core';
 
 class PreciseLocationService {
   constructor() {
-    // Cargar API Key desde variables de entorno para seguridad
-    this.apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyCPPTBvh8bzf_r-rEIy_SzUgVX6xkI7q0g';
     this.currentWatchId = null;
-    this.lastKnownPosition = null;
-    this.accuracyThreshold = 50; // metros
-    this.callbacks = new Set();
+    this.backgroundTaskId = null;
+    this.currentTrackingInfo = null;
   }
 
-  // 🚀 MÉTODO PRINCIPAL HÍBRIDO: GPS Nativo PRIMERO (más rápido) + Google BACKUP
+  // 🚀 MÉTODO PRINCIPAL: GPS NATIVO
   async getCurrentPosition(options = {}) {
+  console.log('[GEO] getCurrentPosition llamado con opciones:', options);
+  console.log('[GEO] getCurrentPosition llamado con opciones:', options);
     const defaultOptions = {
       enableHighAccuracy: true,
-      timeout: 8000, // Timeout más corto para emergencias
-      maximumAge: 0,
-      requireHighAccuracy: true,
-      fastMode: true // Modo rápido para emergencias
+      timeout: 8000,
+      maximumAge: 0
     };
 
     const config = { ...defaultOptions, ...options };
     
-    console.log('🚀 [EMERGENCIA] Obteniendo ubicación HÍBRIDA (GPS + Google)...');
-
-    // ESTRATEGIA 1: GPS NATIVO PRIMERO (MÁS RÁPIDO Y PRECISO)
     try {
       console.log('📱 [GPS-NATIVO] Intentando GPS del dispositivo...');
-      const nativePosition = await this.getNativeGeolocationFast(config);
-      
-      console.log(`✅ [GPS-NATIVO] ¡Éxito! Precisión: ${nativePosition.accuracy}m`);
-      this.lastKnownPosition = nativePosition;
-      return nativePosition;
-      
-    } catch (nativeError) {
-      console.log(`⚠️ [GPS-NATIVO] Falló: ${nativeError.message}`);
-      
-      // ESTRATEGIA 2: GOOGLE API COMO BACKUP
-      try {
-        console.log('🌐 [GOOGLE-BACKUP] Usando Google API...');
-        const googlePosition = await this.getGoogleGeolocation();
-        
-        console.log(`✅ [GOOGLE-BACKUP] ¡Éxito! Precisión: ${googlePosition.accuracy}m`);
-        this.lastKnownPosition = googlePosition;
-        return googlePosition;
-        
-      } catch (googleError) {
-        console.error('❌ [AMBOS-FALLARON] GPS + Google fallaron');
-        throw new Error(`No se pudo obtener ubicación: GPS (${nativeError.message}), Google (${googleError.message})`);
-      }
-    }
-  }
-
-  // 🌐 GOOGLE GEOLOCATION API - PRIORIDAD MÁXIMA
-  async getGoogleGeolocation() {
-    const response = await fetch(`https://www.googleapis.com/geolocation/v1/geolocate?key=${this.apiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        considerIp: true,
-        wifiAccessPoints: [],
-        cellTowers: []
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Google Geolocation Error: ${response.status} - ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    
-    if (!data.location) {
-      throw new Error('Google Geolocation: No location data received');
-    }
-    
-    return {
-      latitude: data.location.lat,
-      longitude: data.location.lng,
-      accuracy: data.accuracy || 30, // Google suele dar precisión muy alta
-      timestamp: Date.now(),
-      source: 'google-api'
-    };
-  }
-
-  // 📱 GPS NATIVO ULTRA-RÁPIDO - PRIORIDAD MÁXIMA
-  async getNativeGeolocationFast(options) {
-    try {
-      // 🚀 PRIORIDAD 1: CAPACITOR NATIVO (Apps nativas iOS/Android)
-      try {
-        const { Geolocation } = await import('@capacitor/geolocation');
-        console.log('📱 [CAPACITOR] Usando Geolocation nativo...');
-        
-        // Solicitar permisos primero
-        const permissions = await Geolocation.requestPermissions();
-        console.log('📱 [CAPACITOR] Permisos:', permissions);
-        
-        if (permissions.location !== 'granted') {
-          throw new Error('Permisos de ubicación denegados en Capacitor');
-        }
-        
-        const position = await Geolocation.getCurrentPosition({
-          enableHighAccuracy: true,
-          timeout: options.timeout || 10000,
-          maximumAge: 0
-        });
-        
-        console.log('✅ [CAPACITOR] Ubicación obtenida:', position);
-        
-        return {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-          timestamp: position.timestamp,
-          source: 'capacitor-nativo'
-        };
-        
-      } catch (capacitorError) {
-        console.log('⚠️ [CAPACITOR] No disponible, usando navegador:', capacitorError.message);
-        
-        // 🌐 FALLBACK: NAVEGADOR WEB
-        return new Promise((resolve, reject) => {
-          if (!navigator.geolocation) {
-            reject(new Error('GPS no disponible en este dispositivo'));
-            return;
-          }
-
-          const timeout = setTimeout(() => {
-            reject(new Error(`GPS timeout después de ${options.timeout}ms`));
-          }, options.timeout);
-
-          navigator.geolocation.getCurrentPosition(
-        (position) => {
-          clearTimeout(timeout);
-          
-          // Validar precisión para emergencias
-          if (position.coords.accuracy > 200) {
-            console.log(`⚠️ [GPS] Precisión baja: ${position.coords.accuracy}m`);
-          }
-          
-          resolve({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            accuracy: position.coords.accuracy,
-            timestamp: position.timestamp,
-            source: 'gps-nativo-rapido'
-          });
-        },
-        (error) => {
-          clearTimeout(timeout);
-          let errorMessage = 'Error GPS desconocido';
-          
-          switch (error.code) {
-            case error.PERMISSION_DENIED:
-              errorMessage = 'Permiso GPS denegado';
-              break;
-            case error.POSITION_UNAVAILABLE:
-              errorMessage = 'GPS no disponible';
-              break;
-            case error.TIMEOUT:
-              errorMessage = 'GPS timeout';
-              break;
-          }
-          
-          reject(new Error(errorMessage));
-        },
-            {
-              enableHighAccuracy: true, // ¡MÁXIMA PRECISIÓN!
-              timeout: options.timeout,
-              maximumAge: 0 // Sin caché para emergencias
-            }
-          );
-        });
-      }
+      const position = await this._getNativeGeolocation(config);
+      console.log(`✅ [GPS-NATIVO] ¡Éxito! Precisión: ${position.accuracy}m`);
+      this.lastKnownPosition = position;
+      return position;
     } catch (error) {
+      console.error('⚠️ [GPS-ERROR] Error al obtener ubicación:', error);
       throw error;
     }
   }
 
-  // 🔄 SEGUIMIENTO CONTINUO HÍBRIDO PARA ACOMPAÑAMIENTO
-  startHighAccuracyWatch(callback, options = {}) {
-    const defaultOptions = {
-      enableHighAccuracy: true,
-      interval: 3000, // Cada 3 segundos para emergencias
-      minAccuracy: 2000, // ✅ AUMENTADO: Aceptar hasta 2000m para seguimiento (emergencias)
-      timeout: 6000, // Timeout más corto para respuesta rápida
-      useNativeFirst: true // Usar GPS nativo primero
-    };
+  // Obtener ubicación del GPS nativo
+  async _getNativeGeolocation(options) {
+    return new Promise((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        reject(new Error('Timeout al obtener ubicación'));
+      }, options.timeout);
 
-    const config = { ...defaultOptions, ...options };
-    
-    console.log('🔄 [SEGUIMIENTO-HÍBRIDO] Iniciando watch GPS + Google...');
-    
-    // Detener cualquier watch previo
-    this.stopWatch();
-    
-    // Función híbrida para obtener ubicación periódicamente
-    const updateLocation = async () => {
-      try {
-        const position = await this.getCurrentPosition({
-          timeout: config.timeout,
-          enableHighAccuracy: config.enableHighAccuracy
-        });
-        
-        // Solo notificar si la precisión es aceptable
-        console.log(`🔍 [DEBUG-SEGUIMIENTO] Posición obtenida: precisión=${position.accuracy}m, límite=${config.minAccuracy}m`);
-        
-        if (position.accuracy <= config.minAccuracy) {
-          console.log(`✅ [SEGUIMIENTO] Precisión ACEPTADA: ${position.accuracy}m ≤ ${config.minAccuracy}m`);
-          callback(position);
-          this.notifyCallbacks(position);
-        } else {
-          console.log(`❌ [SEGUIMIENTO] Precisión RECHAZADA: ${position.accuracy}m > ${config.minAccuracy}m - IGNORANDO`);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          clearTimeout(timeoutId);
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+            timestamp: position.timestamp
+          });
+        },
+        (error) => {
+          clearTimeout(timeoutId);
+          reject(new Error(`Error nativo: ${error.message}`));
+        },
+        {
+          enableHighAccuracy: options.enableHighAccuracy,
+          timeout: options.timeout,
+          maximumAge: options.maximumAge
         }
-        
-      } catch (error) {
-        console.error('❌ [SEGUIMIENTO] Error:', error.message);
-        // Continuar intentando en lugar de fallar
-      }
-    };
-    
-    // Obtener ubicación inicial inmediatamente
-    updateLocation();
-    
-    // Configurar intervalo
-    this.currentWatchId = setInterval(updateLocation, config.interval);
-    
-    console.log(`✅ [SEGUIMIENTO] Watch iniciado cada ${config.interval}ms`);
-  }
-
-  // ⏹️ DETENER SEGUIMIENTO
-  stopWatch() {
-    if (this.currentWatchId) {
-      clearInterval(this.currentWatchId);
-      this.currentWatchId = null;
-      console.log('⏹️ Watch detenido');
-    }
-  }
-
-  // ✅ VERIFICAR PRECISIÓN
-  isHighAccuracy(position) {
-    return position && position.accuracy && position.accuracy <= this.accuracyThreshold;
-  }
-
-  // 📢 NOTIFICAR CALLBACKS
-  notifyCallbacks(position) {
-    this.callbacks.forEach(callback => {
-      try {
-        callback(position);
-      } catch (error) {
-        console.error('Error en callback:', error);
-      }
+      );
     });
   }
 
-  // ⏰ DELAY PARA REINTENTOS
-  delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+  // Método para verificar y solicitar permisos de ubicación
+  async requestLocationPermission() {
+    if (!('permissions' in navigator)) {
+      console.warn('[GEO] API de permisos no disponible en este navegador.');
+      return true; // Asumir que los permisos están habilitados
+    }
+
+    try {
+      const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
+
+      if (permissionStatus.state === 'granted') {
+        console.log('[GEO] Permiso de ubicación concedido.');
+        return true;
+      } else if (permissionStatus.state === 'prompt') {
+        console.log('[GEO] Permiso de ubicación requiere interacción del usuario.');
+        return true; // El navegador pedirá permiso al usuario
+      } else {
+        console.error('[GEO] Permiso de ubicación denegado.');
+        return false;
+      }
+    } catch (error) {
+      console.error('[GEO] Error al verificar permisos de ubicación:', error);
+      return false;
+    }
   }
 
-  // ℹ️ INFORMACIÓN DEL SERVICIO HÍBRIDO
-  getServiceInfo() {
-    return {
-      provider: 'GPS Nativo + Google API (Híbrido)',
-      accuracy: 'Ultra-alta (1-10m GPS, 10-50m Google)',
-      speed: 'Ultra-rápida (GPS primero, Google backup)',
-      strategy: 'GPS nativo PRIMERO → Google API si falla',
-      emergencyOptimized: true,
-      lastPosition: this.lastKnownPosition
+  // Función para obtener ubicación precisa
+  async getPreciseLocation(options = {}) {
+    const hasPermission = await this.requestLocationPermission();
+
+    if (!hasPermission) {
+      throw new Error('Permiso de ubicación denegado. No se puede obtener la ubicación.');
+    }
+
+    return new Promise((resolve, reject) => {
+      if (!('geolocation' in navigator)) {
+        return reject(new Error('Geolocation API no disponible'));
+      }
+
+      const geolocOpts = {
+        enableHighAccuracy: true,
+        timeout: 20000,
+        maximumAge: 0,
+        ...options,
+      };
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude, accuracy } = pos.coords;
+          resolve({
+            latitude: Number(latitude),
+            longitude: Number(longitude),
+            accuracy: Number(accuracy),
+            timestamp: pos.timestamp,
+          });
+        },
+        (err) => reject(err),
+        geolocOpts
+      );
+    });
+  }
+
+  // 🔄 INICIAR SEGUIMIENTO EN SEGUNDO PLANO
+  async startBackgroundTaskWatch({ token }) {
+    console.log('🚀 [BG-TASK] Iniciando seguimiento en segundo plano...');
+
+    if (!token) {
+      console.error('❌ [BG-TASK-ERROR] Se intentó iniciar el seguimiento sin un token.');
+      throw new Error('Se requiere un token válido para el seguimiento');
+    }
+
+    this.currentTrackingInfo = { token };
+
+    const updateLocation = async () => {
+      try {
+        const position = await this.getPreciseLocation({
+          enableHighAccuracy: true,
+          timeout: 20000,
+          maximumAge: 0,
+        });
+
+        console.log('📍 [BG-TASK] Nueva ubicación:', position);
+
+        const payload = {
+          latitud_actual: Number(position.latitude),
+          longitud_actual: Number(position.longitude),
+          precision_metros: Math.round(Number(position.accuracy) || 0),
+          ubicacion_actual: {
+            lat: position.latitude,
+            lng: position.longitude,
+            accuracy: position.accuracy,
+            at: new Date().toISOString(),
+          },
+          ruta_seguimiento: [...(this.currentTrackingInfo.ruta_seguimiento || []), {
+            lat: position.latitude,
+            lng: position.longitude,
+            at: new Date().toISOString(),
+          }],
+          ultima_actualizacion_ubicacion: new Date().toISOString(),
+        };
+
+        const { error: updateError } = await supabase
+          .from('acompanamientos_activos')
+          .update(payload)
+          .eq('token', token);
+
+        if (updateError) {
+          console.error('[SUPABASE] Error al actualizar ubicación:', updateError);
+          return;
+        }
+
+        // 📍 INSERTAR PUNTO EN acompanamientos_puntos para polyline
+        if (window.__currentAcompId) {
+          try {
+            await supabase.from('acompanamientos_puntos').insert({
+              acompanamiento_id: window.__currentAcompId,
+              latitud: Number(position.latitude),
+              longitud: Number(position.longitude),
+              precision_metros: Math.round(Number(position.accuracy) || 0),
+              velocidad_mps: position.speed || null,
+              rumbo_grados: position.heading || null,
+              proveedor: 'gps',
+              en_movimiento: true,
+              recorded_at: new Date().toISOString()
+            });
+            console.log('[POLYLINE] ✅ Punto GPS guardado');
+          } catch (pointErr) {
+            console.error('[POLYLINE] Error guardando punto:', pointErr);
+          }
+        }
+
+        console.info('[SUPABASE] Ubicación actualizada', {
+          token,
+          lat: payload.latitud_actual,
+          lng: payload.longitud_actual,
+        });
+      } catch (error) {
+        console.error('[BG-TASK] Error en actualización:', error);
+      }
     };
+
+  this.currentWatchId = setInterval(updateLocation, 3000);
+    await updateLocation();
+  }
+
+  // ⏹️ DETENER SEGUIMIENTO
+  async stopWatch() {
+    console.log('⏹️ [BG-TASK] Deteniendo seguimiento...');
+    
+    if (this.currentWatchId) {
+      clearInterval(this.currentWatchId);
+      this.currentWatchId = null;
+    }
+
+    if (this.backgroundTaskId && Capacitor.isNativePlatform()) {
+      try {
+        const { BackgroundTask } = await import('@capawesome/capacitor-background-task');
+        await BackgroundTask.finish({ taskId: this.backgroundTaskId });
+      } catch (error) {
+        console.error('⚠️ [BG-TASK] Error al detener tarea nativa:', error);
+      }
+      this.backgroundTaskId = null;
+    }
+
+    this.currentTrackingInfo = null;
+    console.log('✅ [BG-TASK] Seguimiento detenido');
   }
 }
 
 // Instancia única para toda la app
 const preciseLocationService = new PreciseLocationService();
-
 export default preciseLocationService;

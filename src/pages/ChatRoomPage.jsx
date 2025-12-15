@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet';
 import supabase from '@/lib/customSupabaseClient'
-import { useAuth } from '@/contexts/SupabaseAuthContext.jsx';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Send, Loader2, AlertCircle, Users, Paperclip, ChevronDown } from 'lucide-react';
@@ -69,7 +69,7 @@ const ChatRoomPage = () => {
       .from('mensajes_sala')
       .select('*, profile:profiles(id, username, foto_url)')
       .eq('sala_id', sala_id)
-      .order('creado_en', { ascending: true });
+      .order('created_at', { ascending: true });
     if (error) setError('Error cargando mensajes');
     else setMessages(data);
     setLoading(false);
@@ -274,8 +274,8 @@ const ChatRoomPage = () => {
       sala_id,
       user_id: user.id,
       contenido: newMessage,
-      tipo: 'texto',
-      creado_en: new Date().toISOString(),
+      tipo: 'text',
+      created_at: new Date().toISOString(),
     });
     if (!error) setNewMessage('');
     else toast({ variant: 'destructive', title: 'Error', description: 'No se pudo enviar tu mensaje.' });
@@ -319,7 +319,7 @@ const ChatRoomPage = () => {
       }}
     >
       <Helmet>
-        <title>{room?.nombre || 'Sala de Chat'} - Comunidad Zinha</title>
+        <title>{room?.nombre || 'Sala de Chat'} - Comunidad KUNNA</title>
       </Helmet>
 
       {/* Header dinámico que se minimiza */}
@@ -422,7 +422,7 @@ const ChatRoomPage = () => {
                 <div className={`p-3 rounded-2xl max-w-xs ${isMe ? 'bg-pink-500 text-white' : 'bg-white text-gray-800 shadow-sm'}`}>
                   {!isMe && <p className="text-sm font-bold text-pink-600">{msg.profile?.username || 'Anónima'}</p>}
                   <p>{msg.contenido}</p>
-                  <p className="text-xs mt-1 text-right">{format(new Date(msg.creado_en ), 'HH:mm')}</p>
+                  <p className="text-xs mt-1 text-right">{format(new Date(msg.created_at), 'HH:mm')}</p>
                 </div>
               </motion.div>
             );

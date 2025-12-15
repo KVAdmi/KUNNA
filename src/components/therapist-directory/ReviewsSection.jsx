@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import supabase from '@/lib/customSupabaseClient';
-import { useAuth } from '@/contexts/SupabaseAuthContext.jsx';
+import { useAuth } from '../../contexts/SupabaseAuthContext.jsx';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import StarRating from '@/components/ui/StarRating';

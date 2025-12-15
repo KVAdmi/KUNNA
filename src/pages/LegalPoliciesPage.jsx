@@ -35,8 +35,8 @@ const LegalPoliciesPage = () => {
   return (
     <div className="min-h-screen bg-brand-background p-4 sm:p-6 md:p-8">
       <Helmet>
-        <title>Políticas Legales - Zinha</title>
-        <meta name="description" content="Términos de Uso y Políticas de Privacidad de Zinha." />
+        <title>Políticas Legales - KUNNA</title>
+        <meta name="description" content="Términos de Uso y Políticas de Privacidad de KUNNA." />
       </Helmet>
 
       <motion.div 

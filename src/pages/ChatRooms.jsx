@@ -92,7 +92,7 @@ const ChatRooms = () => {
 
       <div className="relative z-10 p-4 pb-24">
         <Helmet>
-          <title>Salas de Chat - Comunidad Zinha</title>
+          <title>Salas de Chat - Comunidad KUNNA</title>
         </Helmet>
 
         <motion.div

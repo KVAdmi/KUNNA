@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- círculo gris (icono base) -->
+    <item>
+        <shape android:shape="oval">
+            <size android:width="24dp" android:height="24dp"/>
+            <solid android:color="#616161"/>
+        </shape>
+    </item>
+
+    <!-- puntito rojo (badge) -->
+    <item
+        android:width="4dp"
+        android:height="4dp"
+        android:gravity="bottom|right"
+        android:bottom="3dp"
+        android:right="3dp">
+        <shape android:shape="oval">
+            <solid android:color="#FF5252"/>
+        </shape>
+    </item>
+</layer-list>

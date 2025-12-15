@@ -221,8 +221,8 @@ export default function HomePage() {
           }}></div>
           
           <img 
-            src="/images/logo-zinha.png" 
-            alt="Zinha Logo" 
+            src="/images/logo_kunna.png" 
+            alt="KUNNA Logo" 
             style={{
               width: '220px',
               height: 'auto',
@@ -271,7 +271,7 @@ export default function HomePage() {
           marginBottom: '20px',
           textShadow: '0 1px 2px rgba(255, 255, 255, 0.6)'
         }}>
-          Zinha está aquí para protegerte, acompañarte y verte florecer.
+          KUNNA está aquí para protegerte, acompañarte y verte florecer.
         </p>
 
         {/* Mensaje de acción */}
@@ -283,7 +283,7 @@ export default function HomePage() {
           marginBottom: '40px',
           textShadow: '0 1px 2px rgba(255, 255, 255, 0.6)'
         }}>
-          Toca el menú y explora lo que Zinha tiene para ti
+          Toca el menú y explora lo que KUNNA tiene para ti
         </p>
 
         {/* Elementos decorativos internos */}

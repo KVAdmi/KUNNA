@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { CheckCircle } from 'lucide-react';
 import { supabase } from '@/lib/customSupabaseClient';
 import { useToast } from '@/components/ui/use-toast';
-import { useAuth } from '@/contexts/SupabaseAuthContext.jsx';
+import { useAuth } from '../../contexts/SupabaseAuthContext.jsx';
 import { Button } from '@/components/ui/button';
 
 const Rituals = () => {

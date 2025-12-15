@@ -1,7 +1,7 @@
 // SISTEMA DE GEOLOCALIZACIÓN PROFESIONAL PARA ZINHA
 // Sistema híbrido con Google Geolocation API como respaldo
 
-const GOOGLE_API_KEY = 'AIzaSyCPPTBvh8bzf_r-rEIy_SzUgVX6xkI7q0g';
+const GOOGLE_API_KEY = 'AIzaSyBWwOIBjClToEXMqtAEMohrZEvNCPuKDAw';
 
 export class GeolocationService {
   constructor() {

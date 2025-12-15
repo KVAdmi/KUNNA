@@ -1,0 +1,119 @@
+// ✅ FooterBottomNavigation.jsx - Versión con SOS unificado
+import React from 'react';
+import { AlertTriangle, PhoneCall, User, Shield } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useToast } from '@/components/ui/use-toast';
+import { useEmergencyActionsExtended } from '@/hooks/useEmergencyActionsExtended';
+
+const FooterBottomNavigation = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  const {
+    toggleCompanionship,
+    startRecordingAudio,
+    reproducirLlamadaSegura,
+    isFollowing,
+    isRecording
+  } = useEmergencyActionsExtended();
+
+  const botones = [
+    {
+      icono: <AlertTriangle size={24} color="white" />,
+      color: '#490000',
+      titulo: 'SOS',
+      onClick: async () => {
+        try {
+          // Si no hay seguimiento activo, iniciarlo primero
+          if (!isFollowing) {
+            await toggleCompanionship();
+          }
+
+          // Si no hay grabación activa, iniciarla
+          if (!isRecording) {
+            await startRecordingAudio();
+          }
+        } catch (error) {
+          console.error('❌ Error en botón SOS:', error);
+          toast({ 
+            title: '❌ Error en SOS', 
+            description: 'No se pudieron iniciar todas las acciones de emergencia'
+          });
+        }
+      },
+    },
+    {
+      icono: <PhoneCall size={24} color="white" />,
+      color: '#8d7583',
+      titulo: 'Llamada',
+      onClick: reproducirLlamadaSegura,
+    },
+    {
+      icono: <Shield size={24} color="white" />,
+      color: '#c1d43a',
+      titulo: 'Vita365',
+      onClick: () => window.open('tel:5593373553', '_self'),
+    },
+    {
+      icono: <User size={24} color="white" />,
+      color: '#c8a6a6',
+      titulo: 'Perfil',
+      onClick: () => navigate('/perfil'),
+    },
+  ];
+
+  return (
+    <footer
+      className="w-full z-50 flex-shrink-0"
+      style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        background: 'linear-gradient(135deg, #382a3c 0%, #4A3E57 50%, #382a3c 100%)',
+        borderTop: '3px solid #ff6b6b',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        height: '80px',
+        paddingBottom: 'env(safe-area-inset-bottom)',
+      }}
+    >
+      <div className="flex items-center justify-around h-full w-full">
+        {botones.map((boton, index) => (
+          <button
+            key={index}
+            onClick={() => {
+              console.log(`🔥 [DEBUG] Botón ${boton.titulo} clickeado`);
+              try {
+                boton.onClick();
+                console.log(`✅ [DEBUG] Botón ${boton.titulo} ejecutado sin errores`);
+              } catch (error) {
+                console.error(`❌ [DEBUG] Error en botón ${boton.titulo}:`, error);
+              }
+            }}
+            className="flex flex-col items-center justify-center transition-all duration-200 hover:scale-105 group flex-1 h-full"
+          >
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center mb-1 transition-all duration-200 group-hover:scale-110"
+              style={{
+                backgroundColor: boton.color,
+                boxShadow: `0 4px 12px ${boton.color}40`,
+              }}
+            >
+              {boton.icono}
+            </div>
+            <span
+              className="text-xs font-medium text-white/90 group-hover:text-white transition-colors duration-200 text-center leading-tight"
+              style={{ fontSize: '11px', fontFamily: 'system-ui, -apple-system, sans-serif' }}
+            >
+              {boton.titulo}
+            </span>
+          </button>
+        ))}
+      </div>
+    </footer>
+  );
+};
+
+export default FooterBottomNavigation;

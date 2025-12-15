@@ -18,3 +18,9 @@ supabase/.branches/
 # Firebase (si los tienes, mejor no subirlos)
 android/app/google-services.json
 ios/GoogleService-Info.plist
+
+# --- Jitsi Branding (configuración local) ---
+config-jitsi/
+jitsi-meet/
+branding/
+

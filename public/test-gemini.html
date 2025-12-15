@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba Gemini</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        #output {
+            white-space: pre-wrap;
+            background: #f5f5f5;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+        .error {
+            color: red;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>Prueba de Gemini API</h1>
+    <form id="promptForm">
+        <textarea 
+            id="prompt" 
+            rows="4" 
+            style="width: 100%; margin-bottom: 1rem;"
+            placeholder="Escribe tu pregunta para Gemini aquí..."></textarea>
+        <button type="submit">Enviar</button>
+    </form>
+    <div id="output"></div>
+
+    <script>
+        const output = document.getElementById('output');
+        const form = document.getElementById('promptForm');
+        const promptInput = document.getElementById('prompt');
+
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            const prompt = promptInput.value.trim();
+            
+            if (!prompt) return;
+            
+            output.className = 'loading';
+            output.textContent = 'Consultando a Gemini...';
+            
+            try {
+                const res = await fetch('/.netlify/functions/gemini', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt })
+                });
+                
+                const data = await res.json();
+                
+                if (!res.ok) throw new Error(data.error || 'Error en la respuesta');
+                
+                const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Sin respuesta';
+                output.className = '';
+                output.textContent = text;
+                
+            } catch (error) {
+                output.className = 'error';
+                output.textContent = `Error: ${error.message}`;
+            }
+        };
+    </script>
+</body>
+</html>

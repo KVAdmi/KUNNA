@@ -61,7 +61,7 @@ const PodcastPage = () => {
     return (
         <div className="min-h-screen p-4 md:p-8 bg-brand-background">
             <Helmet>
-                <title>Escucha a Zinha - Podcast</title>
+                <title>Escucha a KUNNA - Podcast</title>
                 <meta name="description" content="Un espacio para sentirnos cerca, escucharnos y abrazarnos con palabras." />
             </Helmet>
 
@@ -73,7 +73,7 @@ const PodcastPage = () => {
                 <div className="inline-block p-4 bg-brand-accent/20 rounded-full mb-4">
                     <Podcast className="h-12 w-12 text-brand-primary" />
                 </div>
-                <h1 className="text-4xl font-bold font-serif text-brand-primary mt-2">Escucha a Zinha</h1>
+                <h1 className="text-4xl font-bold font-serif text-brand-primary mt-2">Escucha a KUNNA</h1>
                 <p className="text-lg text-brand-secondary max-w-md mx-auto mt-2">
                     Un espacio para sentirnos cerca, escucharnos y abrazarnos con palabras.
                 </p>

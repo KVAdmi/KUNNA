@@ -3,7 +3,7 @@
 
 class PreciseLocationService {
   constructor() {
-    this.apiKey = 'AIzaSyCPPTBvh8bzf_r-rEIy_SzUgVX6xkI7q0g'; // Tu API key directo
+    this.apiKey = 'AIzaSyBWwOIBjClToEXMqtAEMohrZEvNCPuKDAw'; // Tu API key directo
     this.currentWatchId = null;
     this.lastKnownPosition = null;
     this.accuracyThreshold = 50; // metros

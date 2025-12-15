@@ -30,23 +30,23 @@ const TopHeader = () => {
   }, [lastScrollY, isMobileView]);
 
   const pageDetails = {
-    '/': { title: 'Zinha', icon: null },
+    '/': { title: 'KUNNA', icon: null },
     '/seguridad': { title: 'Seguridad', icon: Shield },
     '/seguridad/apoyo-y-refugios': { title: 'Apoyo y Refugios', icon: HomeIcon },
     '/comunidad': { title: 'Comunidad', icon: Users },
-    '/comunidad/blog': { title: 'Blog Zinha', icon: Users },
+    '/comunidad/blog': { title: 'Blog KUNNA', icon: Users },
     '/comunidad/salas': { title: 'Salas de Chat', icon: MessageSquare },
     '/bienestar': { title: 'Tu Bienestar', icon: Heart },
     '/prevencion': { title: 'Prevención', icon: Activity },
     '/holistica': { title: 'Zona Holística', icon: Sparkles },
-    '/biblioteca': { title: 'Biblioteca Zinha', icon: Library },
-    '/podcast': { title: 'Escucha a Zinha', icon: Podcast },
+    '/biblioteca': { title: 'Biblioteca KUNNA', icon: Library },
+    '/podcast': { title: 'Escucha a KUNNA', icon: Podcast },
     '/diario-emocional': { title: 'Diario Emocional', icon: BookMarked },
     '/perfil': { title: 'Mi Perfil', icon: User },
     '/emprende': { title: 'Emprende en Casa', icon: Briefcase },
   };
 
-  const currentDetails = pageDetails[location.pathname] || { title: 'Zinha' };
+  const currentDetails = pageDetails[location.pathname] || { title: 'KUNNA' };
   const Icon = currentDetails.icon;
 
   // No mostrar header en las salas de chat (tienen su propio header)
@@ -70,8 +70,8 @@ const TopHeader = () => {
           <div className="flex items-center space-x-3 min-w-0">
             <Link to="/" className="flex-shrink-0">
               <img 
-                src="https://storage.googleapis.com/hostinger-horizons-assets-prod/ce6b3f33-5fa3-4c63-a670-0869d616221b/0e777a8766c7bd2db6c389ce3909c978.png" 
-                alt="Zinha Logo" 
+                src="/images/logo_kunna.png" 
+                alt="KUNNA Logo" 
                 className="h-8 w-8 object-contain" 
               />
             </Link>
@@ -102,9 +102,9 @@ const TopHeader = () => {
   return (
     <div className="flex items-center space-x-3 p-4">
       <Link to="/">
-        <img src="https://storage.googleapis.com/hostinger-horizons-assets-prod/ce6b3f33-5fa3-4c63-a670-0869d616221b/0e777a8766c7bd2db6c389ce3909c978.png" alt="Zinha Logo" className="h-12" />
+        <img src="/images/logo_kunna.png" alt="KUNNA Logo" className="h-12" />
       </Link>
-      <h1 className="text-2xl font-bold text-brand-primary font-serif">Zinha</h1>
+      <h1 className="text-2xl font-bold text-brand-primary font-serif">KUNNA</h1>
     </div>
   );
 };

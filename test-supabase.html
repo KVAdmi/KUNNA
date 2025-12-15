@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Conexión Supabase</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Test Conexión Supabase KUNNA</h1>
+    <div id="result"></div>
+    
+    <script>
+        const SUPABASE_URL = 'https://wpsysctbaxbtzyebcjlb.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indwc3lzY3RiYXhidHp5ZWJjamxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAzMzA5NDgsImV4cCI6MjA3NTkwNjk0OH0.wQjtzKvkGIWOylIRGjd_p1Cv_9_SU54dr-kpAtJuBIc';
+
+        async function testConnection() {
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                
+                resultDiv.innerHTML = '<p>🔄 Probando conexión...</p>';
+                
+                // Test 1: Verificar conexión básica
+                const { data, error } = await supabase.from('profiles').select('count').limit(1);
+                
+                if (error) {
+                    resultDiv.innerHTML = `
+                        <h3>❌ Error de conexión:</h3>
+                        <p><strong>Mensaje:</strong> ${error.message}</p>
+                        <p><strong>Detalle:</strong> ${error.details || 'N/A'}</p>
+                        <p><strong>Código:</strong> ${error.code || 'N/A'}</p>
+                        <hr>
+                        <p><strong>Posibles soluciones:</strong></p>
+                        <ul>
+                            <li>Verificar que las tablas existen en Supabase</li>
+                            <li>Verificar que RLS está configurado</li>
+                            <li>Revisar la clave API</li>
+                        </ul>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <h3>✅ Conexión exitosa!</h3>
+                        <p>Supabase está configurado correctamente.</p>
+                        <p>Datos: ${JSON.stringify(data)}</p>
+                    `;
+                }
+                
+            } catch (err) {
+                resultDiv.innerHTML = `
+                    <h3>💥 Error fatal:</h3>
+                    <p>${err.message}</p>
+                `;
+            }
+        }
+
+        testConnection();
+    </script>
+</body>
+</html>

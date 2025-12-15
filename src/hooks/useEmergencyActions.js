@@ -1,10 +1,10 @@
-// src/hooks/useEmergencyActions.js - CÓDIGO ORIGINAL FUNCIONAL RESTAURADO
-
+// src/hooks/useEmergencyActions.js
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/SupabaseAuthContext.jsx';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import supabase from '@/lib/customSupabaseClient';
 import preciseLocationService from '@/lib/preciseLocationService';
+import { Capacitor } from '@capacitor/core';
 
 const useEmergencyActions = () => {
   const { user } = useAuth();
@@ -12,16 +12,19 @@ const useEmergencyActions = () => {
   const [contacts, setContacts] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
 
-  // Función para cargar APIs dinámicamente
+  // Función para cargar APIs dinámicamente y de forma segura
   const loadCapacitorAPIs = async () => {
-    try {
-      const { Geolocation } = await import('@capacitor/geolocation');
-      const { AppLauncher } = await import('@capacitor/app-launcher');
-      return { Geolocation, AppLauncher };
-    } catch (error) {
-      console.log('📱 APIs nativas no disponibles, usando web APIs');
-      return { Geolocation: null, AppLauncher: null };
+    // Comprobar si estamos en un dispositivo nativo
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const { AppLauncher } = await import('@capacitor/app-launcher');
+        return { AppLauncher };
+      } catch (e) {
+        console.error("Error al cargar AppLauncher:", e);
+        return { AppLauncher: null };
+      }
     }
+    return { AppLauncher: null };
   };
 
   // Cargar contactos al montar
@@ -50,7 +53,7 @@ const useEmergencyActions = () => {
   const sendAudioEmergency = async () => {
     console.log('🚨 [DEBUG] sendAudioEmergency llamado');
     console.log('🚨 [DEBUG] Contactos disponibles:', contacts.length);
-    console.log('🚨 [DEBUG] Usuario actual:', user?.id);
+    console.log('🚨 [DEBUG Usuario actual:', user?.id);
     
     if (!user) {
       toast({ title: '❌ Error de sesión', description: 'No hay usuario logueado. Inicia sesión primero.' });
@@ -87,7 +90,7 @@ const useEmergencyActions = () => {
         retries: 2
       });
       
-      console.log(`🎯 [AUXILIO] Ubicación obtenida - Precisión: ${position.accuracy}m (Fuente: ${position.source})`);
+      console.log(`🎯 [AUXILIO Ubicación obtenida - Precisión: ${position.accuracy}m (Fuente: ${position.source})`);
 
       // 3. Mensaje: "Estamos grabando tu entorno durante 15 segundos"
       toast({ 
@@ -169,14 +172,14 @@ Precisión: ${Math.round(position.accuracy)}m (${position.source})
       const { AppLauncher } = await loadCapacitorAPIs();
       
       if (AppLauncher) {
-        // Enviar a todos los contactos, priorizando por orden
+        // Estamos en el móvil, usamos el plugin
         contacts.forEach((contact) => {
           const telefono = contact.telefono.replace(/\D/g, '');
           const url = `https://wa.me/52${telefono}?text=${encodeURIComponent(mensajeWA)}`;
           AppLauncher.openUrl({ url });
         });
       } else {
-        // Fallback para web
+        // Estamos en la web, usamos el método tradicional
         contacts.forEach((contact) => {
           const telefono = contact.telefono.replace(/\D/g, '');
           const url = `https://wa.me/52${telefono}?text=${encodeURIComponent(mensajeWA)}`;
@@ -209,215 +212,190 @@ Precisión: ${Math.round(position.accuracy)}m (${position.source})
     }
   };
 
-  // 👥 ACOMPAÑAMIENTO EN TIEMPO REAL CON MÁXIMA PRECISIÓN
+  // 👥 ACOMPAÑAMIENTO EN TIEMPO REAL
   const toggleCompanionship = async () => {
-    console.log('🚨 [DEBUG] toggleCompanionship EJECUTÁNDOSE');
-    console.log('🚨 [DEBUG] Estado actual:', { isFollowing, contacts: contacts.length, user: user?.id });
-    
     if (contacts.length === 0) {
-      console.log('❌ [DEBUG] No hay contactos configurados');
       toast({ title: '⚠️ Sin contactos', description: 'Configura contactos de emergencia primero.' });
       return;
     }
 
+    // --- LÓGICA PARA DETENER EL SEGUIMIENTO ---
     if (isFollowing) {
-      // Detener seguimiento
-      preciseLocationService.stopWatch();
+      await preciseLocationService.stopWatch();
       setIsFollowing(false);
       
-      // Detener en base de datos si existe token
       if (window.__currentTrackingToken) {
-        const { data, error } = await supabase.rpc('detener_seguimiento_tiempo_real', {
-          p_token: window.__currentTrackingToken
-        });
-        
-        if (!error) {
-          toast({ 
-            title: '🔒 Acompañamiento detenido', 
-            description: 'Ya no se comparte tu ubicación. Tu privacidad está protegida.' 
+        // Marcamos el acompañamiento como inactivo en la base de datos
+        try {
+          await supabase.from('acompanamientos_activos')
+            .update({ activo: false, fin: new Date().toISOString() })
+            .eq('token', window.__currentTrackingToken);
+          window.__currentTrackingToken = null;
+          toast({
+            title: '🔒 Acompañamiento finalizado',
+            description: 'Has llegado a tu destino de forma segura.'
+          });
+        } catch (error) {
+          console.error('Error al finalizar seguimiento:', error);
+          toast({
+            title: '⚠️ Error al finalizar',
+            description: 'El seguimiento puede seguir activo. Intenta de nuevo.'
           });
         }
-        window.__currentTrackingToken = null;
-      } else {
-        toast({ title: '🔒 Seguimiento detenido' });
       }
       return;
     }
 
-    // Mostrar mensaje inicial como me pidió
-    toast({ 
-      title: '🚶‍♀️ Tu acompañamiento inicia ahora', 
-      description: 'Para detenerlo vuelve a tocar el botón. Obteniendo ubicación...' 
-    });
-
-    // Iniciar seguimiento con máxima precisión
+    // Primero verificar permisos de ubicación
     try {
-      console.log('🔥 [DEBUG] toggleCompanionship - INICIANDO');
-      console.log('🔥 [DEBUG] Contacts disponibles:', contacts.length);
-      console.log('🔥 [DEBUG] User ID:', user?.id);
+      toast({ title: '📍 Verificando ubicación...', description: 'Permitiendo acceso a tu ubicación.' });
       
-      // 📱 SOLICITAR PERMISOS DE UBICACIÓN PRIMERO (ANTES DE OBTENER POSICIÓN)
-      console.log('📱 [EMERGENCIA] Solicitando permisos de ubicación ANTES de obtener posición...');
-      try {
-        const { Geolocation } = await import('@capacitor/geolocation');
-        const permissions = await Geolocation.requestPermissions();
-        console.log('📱 [EMERGENCIA] Permisos obtenidos:', permissions);
-        
-        if (permissions.location !== 'granted') {
-          console.log('⚠️ [EMERGENCIA] Permisos denegados, continuando con web fallback');
-        } else {
-          console.log('✅ [EMERGENCIA] Permisos de ubicación CONCEDIDOS');
-        }
-      } catch (capacitorError) {
-        console.log('🌐 [EMERGENCIA] Capacitor no disponible, usando web APIs:', capacitorError.message);
-      }
-      
-      console.log('🚨 [SEGURIDAD CRÍTICA] Iniciando acompañamiento con Google Maps');
-      
-      // Obtener ubicación inicial con Google Maps (máxima precisión y velocidad)
-      console.log('🔥 [DEBUG] Llamando a preciseLocationService.getCurrentPosition...');
       const position = await preciseLocationService.getCurrentPosition({
         requireHighAccuracy: true,
         timeout: 10000,
         retries: 2
       });
 
-      console.log(`🎯 Ubicación inicial obtenida - Precisión: ${position.accuracy}m (Fuente: ${position.source})`);
-      
-      // Iniciar seguimiento en base de datos
-      const { data, error } = await supabase.rpc('iniciar_seguimiento_tiempo_real_v2', {
-        p_user_id: user.id,
-        p_destino: 'Seguimiento de emergencia',
-        p_contacto_emergencia: contacts[0]?.telefono || 'No configurado'
-      });
-
-      if (error) throw error;
-
-      const trackingUrl = data.url_seguimiento;
-      window.__currentTrackingToken = data.token;
-
-      console.log(`✅ Token de seguimiento: ${data.token}`);
-      console.log(`🔗 URL de seguimiento: ${trackingUrl}`);
-
-      // 📱 SOLICITAR PERMISOS DE UBICACIÓN (CON FALLBACK PARA WEB)
-      try {
-        try {
-          const { Geolocation } = await import('@capacitor/geolocation');
-          console.log('📱 [EMERGENCIA] Solicitando permisos de ubicación...');
-          
-          const permissions = await Geolocation.requestPermissions();
-          console.log('📱 [EMERGENCIA] Permisos obtenidos:', permissions);
-          
-          if (permissions.location !== 'granted') {
-            console.log('⚠️ [EMERGENCIA] Permisos denegados, continuando con web fallback');
-          } else {
-            console.log('✅ [EMERGENCIA] Permisos de ubicación CONCEDIDOS');
-          }
-        } catch (capacitorError) {
-          console.log('🌐 [EMERGENCIA] Capacitor no disponible, usando web APIs:', capacitorError.message);
-        }
-      } catch (error) {
-        console.log('⚠️ [EMERGENCIA] Error general de permisos, continuando:', error.message);
+      if (!position) {
+        toast({
+          title: '❌ Error de ubicación',
+          description: 'No se pudo obtener tu ubicación. Verifica los permisos.'
+        });
+        return;
       }
 
-      // Configurar seguimiento continuo de alta precisión
-      preciseLocationService.startHighAccuracyWatch(
-        async (position) => {
-          console.log(`📍 [SEGUIMIENTO] Nueva posición: ${position.latitude}, ${position.longitude} (±${position.accuracy}m) [${position.source}]`);
+      console.log('✅ Ubicación inicial obtenida:', position);
+    } catch (error) {
+      console.error('Error al obtener ubicación:', error);
+      toast({
+        title: '❌ Error de ubicación',
+        description: 'Permite el acceso a tu ubicación para continuar.'
+      });
+      return;
+    }
 
-          try {
-            // 1. Actualizar con RPC (sistema original)
-            const { data: updateData, error: rpcError } = await supabase.rpc('actualizar_ubicacion_seguimiento_v2_debug', {
-              p_token: data.token,
-              p_latitud: position.latitude,
-              p_longitud: position.longitude,
-              p_precision: Math.round(position.accuracy)
-            });
-            
-            if (rpcError) {
-              console.error('❌ Error actualizando ubicación con RPC:', rpcError);
-            } else {
-              console.log('✅ Ubicación actualizada en RPC');
-            }
+    // --- LÓGICA PARA INICIAR EL SEGUIMIENTO ---
+    toast({ 
+      title: '🚶‍♀️ Iniciando acompañamiento...',
+      description: 'Creando tu enlace seguro y activando el seguimiento.'
+    });
 
-            // 2. TAMBIÉN actualizar tabla acompanamientos_activos directamente con TODAS las columnas
-            const ahora = new Date().toISOString();
-            const { error: tableError } = await supabase.from('acompanamientos_activos')
-              .update({
-                latitud_actual: position.latitude,
-                longitud_actual: position.longitude,
-                ubicacion_actual: {
-                  type: "Point", 
-                  coordinates: [position.longitude, position.latitude]
-                },
-                activo: true, // Asegurar que sigue activo
-                updated_at: ahora,
-                ultima_actualizacion_ubicacion: ahora, // ✅ NUEVA COLUMNA
-                precision_metros: Math.round(position.accuracy),
-                // ✅ CONSTRUIR ruta_seguimiento como array de coordenadas
-                ruta_seguimiento: [{
-                  coordinates: [position.longitude, position.latitude],
-                  timestamp: ahora,
-                  precision: Math.round(position.accuracy)
-                }]
-              })
-              .eq('token', data.token); // ✅ Actualizar solo POR TOKEN
-
-            if (tableError) {
-              console.error('❌ Error actualizando acompanamientos_activos:', tableError);
-            } else {
-              console.log('✅ Ubicación actualizada en acompanamientos_activos');
-            }
-
-          } catch (criticalError) {
-            console.error('💥 Error crítico en actualización:', criticalError);
-          }
-        },
-        {
-              minAccuracy: 2000, // ✅ RESTAURADO: Como estaba funcionando (acepta 1068m)
-          interval: 3000,  // Actualizar cada 3 segundos para seguridad crítica
-          enableHighAccuracy: true
-        }
-      );
-
-      // Notificar a contactos con mensaje claro
-      const mensaje = encodeURIComponent(`🚶‍♀️ ACOMPÁÑAME - Estoy en camino y necesito que me acompañes virtualmente. 
-
-Puedes seguir mi ubicación en tiempo real aquí: 
-${trackingUrl}
-
-Este enlace te permitirá ver dónde estoy y mi recorrido completo desde que inició mi trayecto.
-
-¡Gracias por cuidarme! 💜`);
-      
-      const { AppLauncher } = await loadCapacitorAPIs();
-      
-      if (AppLauncher) {
-        contacts.forEach((contact) => {
-          const telefono = contact.telefono.replace(/\D/g, '');
-          const url = `https://wa.me/52${telefono}?text=${mensaje}`;
-          AppLauncher.openUrl({ url });
+    try {
+      // 1. Verificar y solicitar permisos de ubicación ANTES de hacer nada
+      toast({
+        title: '📍 Solicitando permisos de ubicación...',
+        description: 'Necesitamos tu permiso para seguirte.'
+      });
+      const hasPermission = await preciseLocationService.checkAndRequestPermissions();
+      if (!hasPermission) {
+        toast({
+          title: '❌ Permiso de ubicación denegado',
+          description: 'No podemos iniciar el acompañamiento sin tu permiso.',
+          variant: 'destructive',
         });
-      } else {
-        // Fallback para web
-        contacts.forEach((contact) => {
-          const telefono = contact.telefono.replace(/\D/g, '');
-          const url = `https://wa.me/52${telefono}?text=${mensaje}`;
-          window.open(url, '_blank');
+        return;
+      }
+      toast({
+        title: '✅ Permisos aceptados',
+        description: 'Obteniendo tu ubicación inicial...'
+      });
+
+      // 2. Iniciar el seguimiento en la base de datos para obtener el token y el ID
+      let trackingInfo;
+      let acompanamiento_id, token, trackingUrl;
+      try {
+        const { data, error } = await supabase.rpc('iniciar_seguimiento_tiempo_real_v2', {
+          p_user_id: user.id,
+          p_destino: 'Acompañamiento en tiempo real',
+          p_contacto_emergencia: contacts[0]?.telefono || 'No configurado'
+        });
+
+        if (error) throw error;
+
+        acompanamiento_id = data.id;
+        token = data.token;
+        trackingUrl = data.url_seguimiento || data.url || null;
+
+        if (!acompanamiento_id || !token || !trackingUrl) {
+          throw new Error("Datos de seguimiento incompletos recibidos del servidor.");
+        }
+
+        console.log("✅ Seguimiento creado en la base de datos:", { acompanamiento_id, token, trackingUrl });
+      // Guardar token para referencia global
+      window.__currentTrackingToken = token;
+
+      } catch (err) {
+        console.error('❌ Error inesperado al iniciar seguimiento en la base de datos:', err);
+        toast({
+          title: '❌ Error de red',
+          description: 'No se pudo crear el evento de acompañamiento. Revisa tu conexión.'
+        });
+        return;
+      }
+
+      // 3. Iniciar el servicio de seguimiento en segundo plano con los datos normalizados
+        toast({
+        title: '🛰️ Activando seguimiento en segundo plano...',
+        description: 'Tu ubicación se enviará de forma segura.'
+        });
+      await preciseLocationService.startBackgroundTaskWatch({ acompanamiento_id, token });
+
+      // 4. ABRIR LA URL DE SEGUIMIENTO (Ahora que el servicio ya está activo)
+      console.log("✅ Servicio en segundo plano iniciado. Abriendo URL de seguimiento...");
+      window.open(trackingUrl, "_blank");
+
+      // 5. Notificar a los contactos
+      console.log("📱 Enviando enlace a contactos:", contacts);
+      const mensaje = encodeURIComponent(`🚶‍♀️ ACOMPÁÑAME - Estoy en camino y quiero que me acompañes virtualmente.\n\n👀 Sigue mi ubicación en tiempo real aquí:\n${trackingUrl}\n\n⚠️ Por favor mantén este enlace abierto hasta que llegue a mi destino.`);
+      
+      try {
+        const { AppLauncher } = await loadCapacitorAPIs();
+        
+        // Enviar mensaje a cada contacto
+        for (const contact of contacts) {
+          try {
+            const telefono = contact.telefono.replace(/\D/g, '');
+            const url = `https://wa.me/52${telefono}?text=${mensaje}`;
+            
+            console.log("🔗 Enviando WhatsApp a:", telefono);
+            
+            if (AppLauncher) {
+              // Móvil - Usar Capacitor
+              await AppLauncher.openUrl({ url });
+            } else {
+              // Web - Abrir en nueva pestaña
+              window.open(url, '_blank');
+            }
+            
+            // Esperar 1.5 segundos entre cada envío para evitar bloqueos
+            await new Promise(resolve => setTimeout(resolve, 1500));
+          } catch (contactError) {
+            console.error(`Error al enviar a ${contact.telefono}:`, contactError);
+          }
+        }
+      } catch (error) {
+        console.error("❌ Error al enviar mensajes de WhatsApp:", error);
+        toast({
+          title: "⚠️ Error al enviar mensajes",
+          description: "El seguimiento está activo pero hubo un error al notificar a los contactos."
         });
       }
 
       setIsFollowing(true);
       toast({ 
-        title: '✅ Acompañamiento activo', 
-        description: `Tu ubicación se comparte en tiempo real. Precisión actual: ${Math.round(position.accuracy)}m con ${position.source}` 
+        title: '✅ ¡Acompañamiento activo!',
+        description: 'Tu ubicación se comparte de forma segura. Puedes bloquear el teléfono.'
       });
 
     } catch (error) {
-      console.error('❌ [ERROR CRÍTICO] Error en acompañamiento:', error);
-      toast({ title: '❌ Error crítico en acompañamiento', description: error.message });
+      console.error('❌ [ERROR CRÍTICO] Error al iniciar acompañamiento:', error);
+      toast({ title: '❌ Error al iniciar', description: error.message });
+      // Limpiar en caso de fallo
+      await preciseLocationService.stopWatch();
+      setIsFollowing(false);
     }
   };
+
 
   // 📞 LLAMADA SEGURA - Reproduce audio del bucket audios-seguridad
   const reproducirLlamadaSegura = async () => {
@@ -464,5 +442,7 @@ Este enlace te permitirá ver dónde estoy y mi recorrido completo desde que ini
   };
 };
 
-export default useEmergencyActions;
-export { useEmergencyActions };
+const useEmergencyActionsHook = useEmergencyActions;
+export { useEmergencyActionsHook as useEmergencyActions };
+export default useEmergencyActionsHook;
+

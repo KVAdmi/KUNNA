@@ -5,7 +5,7 @@ import { Helmet } from 'react-helmet';
 import { Gift, Copy, Check, Users, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { useAuth } from '@/contexts/SupabaseAuthContext.jsx';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 import supabase from '@/lib/customSupabaseClient';
 
 const ReferralPage = () => {
@@ -62,14 +62,14 @@ const ReferralPage = () => {
   return (
     <div className="min-h-[100dvh] flex flex-col p-4 overflow-y-auto">
       <Helmet>
-        <title>Invita y Gana - Zinha</title>
-        <meta name="description" content="Comparte tu código de invitación y ayuda a crecer la comunidad de Zinha." />
+        <title>Invita y Gana - KUNNA</title>
+        <meta name="description" content="Comparte tu código de invitación y ayuda a crecer la comunidad de KUNNA." />
       </Helmet>
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center mb-8">
         <Gift className="mx-auto h-12 w-12 text-brand-accent" />
         <h1 className="text-4xl font-bold font-serif text-brand-primary mt-2">Invita y Gana</h1>
-        <p className="text-lg text-brand-secondary max-w-md mx-auto">Comparte la magia de Zinha con tus amigas.</p>
+        <p className="text-lg text-brand-secondary max-w-md mx-auto">Comparte la magia de KUNNA con tus amigas.</p>
       </motion.div>
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white rounded-3xl p-6 card-hover text-center mb-6">
@@ -100,7 +100,7 @@ const ReferralPage = () => {
             <div className="space-y-3 max-h-60 overflow-y-auto">
             {referredUsers.length > 0 ? referredUsers.map(ref => (
                 <div key={ref.referido_id} className="bg-brand-background p-3 rounded-lg flex justify-between items-center">
-                    <p className="text-brand-secondary font-medium">{ref.profiles?.username || ref.profiles?.email || 'Amiga Zinha'}</p>
+                    <p className="text-brand-secondary font-medium">{ref.profiles?.username || ref.profiles?.email || 'Amiga KUNNA'}</p>
                     <p className="text-xs text-brand-secondary/80">{new Date(ref.creado_en).toLocaleDateString()}</p>
                 </div>
             )) : (

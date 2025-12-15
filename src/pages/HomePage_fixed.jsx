@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet';
 import { FLAGS } from '../config/flags.ts';
-import { useAuth } from '@/contexts/SupabaseAuthContext.jsx';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 
 const HomePage = () => {
   const { user, profile } = useAuth();
@@ -75,10 +75,10 @@ const HomePage = () => {
                 <div className="relative w-40 h-40 mx-auto rounded-full bg-gradient-to-br from-white/30 via-white/20 to-white/10 backdrop-blur-xl border border-white/40 shadow-2xl p-4">
                   <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-white/5 rounded-full"></div>
                   
-                  {/* LOGO REAL DE ZINHA */}
+                  {/* LOGO REAL DE KUNNA */}
                   <img 
-                    src="/images/logo-zinha.png" 
-                    alt="Zinha Logo" 
+                    src="/images/logo_kunna.png" 
+                    alt="KUNNA Logo" 
                     className="w-full h-full object-contain relative z-10 drop-shadow-2xl transform group-hover:scale-105 transition-transform duration-500" 
                   />
                   

@@ -233,7 +233,7 @@ const RegistroBeneficiaria = () => {
         // No mostramos error al usuario
       }
 
-      toast.success('¡Registro exitoso! Bienvenida a Zinha');
+      toast.success('¡Registro exitoso! Bienvenida a KUNNA');
       
       // 9. Redirigir al dashboard de beneficiaria
       navigate('/dashboard');
@@ -256,7 +256,7 @@ const RegistroBeneficiaria = () => {
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Registro Zinha
+            Registro KUNNA
           </h1>
           <p className="text-gray-600">
             {step === 1 ? 'Crea tu cuenta' : 'Ingresa tu código de acceso'}
@@ -352,7 +352,7 @@ const RegistroBeneficiaria = () => {
                 🎯 Código de acceso
               </h3>
               <p className="text-sm text-purple-700">
-                Ingresa el código que te proporcionó tu titular para acceder a Vita365 + Zinha
+                Ingresa el código que te proporcionó tu titular para acceder a Vita365 + KUNNA
               </p>
             </div>
 

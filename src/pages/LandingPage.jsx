@@ -30,7 +30,7 @@ const LandingPage = () => {
     {
       icon: Shield,
       title: 'Seguridad',
-      description: 'Botones de auxilio, acompañamiento en tiempo real, red de apoyo y el respaldo de Vita365 para que te sientas segura 24/7.',
+      description: 'Botones de auxilio, acompañamiento en tiempo real, red de apoyo para que te sientas segura 24/7.',
     },
     {
       icon: Heart,
@@ -85,11 +85,11 @@ backgroundImage: `url('/images/imagen_landing.png')`,
                 transition={{ duration: 0.8, delay: 0.2 }}
               >
                 <img 
-                  src="/images/logo-zinha.png" 
-                  alt="Zinha Logo" 
+                  src="/images/logo_kunna.png" 
+                  alt="KUNNA Logo" 
                   className="h-32 md:h-40 mx-auto mb-4 drop-shadow-lg" 
                 />
-                <span className="font-bold text-4xl md:text-5xl font-serif text-brand-primary block">Zinha</span>
+                <span className="font-bold text-4xl md:text-5xl font-serif text-brand-primary block">KUNNA</span>
               </motion.div>
 
               <motion.h1 
@@ -107,7 +107,7 @@ backgroundImage: `url('/images/imagen_landing.png')`,
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.6 }}
               >
-                Zinha es la primera app integral de seguridad y bienestar para mujeres en MÉXICO. Conéctate, aprende y siéntete segura, todo en un mismo lugar.
+                KUNNA es la primera app de bienestar + seguridad + acompañamiento para mujeres. Conéctate, aprende y siéntete segura, todo en un mismo lugar.
               </motion.p>
               
               <motion.div 
@@ -186,7 +186,7 @@ backgroundImage: `url('/images/imagen_landing.png')`,
                     size="lg" 
                     className="text-lg py-6 px-10 border-2 border-brand-accent text-brand-accent hover:bg-brand-accent hover:text-white rounded-full transition-all duration-300 shadow-lg"
                   >
-                    Explorar Zinha
+                    Explorar KUNNA
                   </Button>
                 </Link>
               </motion.div>
@@ -197,11 +197,11 @@ backgroundImage: `url('/images/imagen_landing.png')`,
         <footer className="bg-white/60 backdrop-blur-lg p-8 border-t border-brand-accent/20">
           <div className="max-w-7xl mx-auto text-center">
             <div className="mb-4">
-              <span className="font-bold text-2xl font-serif text-brand-primary">Zinha</span>
+              <span className="font-bold text-2xl font-serif text-brand-primary">KUNNA</span>
               <p className="text-brand-secondary mt-2">Tu espacio de confianza</p>
             </div>
             <div className="text-brand-secondary">
-              <p>&copy; {new Date().getFullYear()} Zinha by Kódigo Vivo. Todos los derechos reservados.</p>
+              <p>&copy; {new Date().getFullYear()} KUNNA by Kódigo Vivo. Todos los derechos reservados.</p>
               <div className="mt-4">
                 <Link to="/legal" className="text-sm hover:text-brand-primary underline transition-colors duration-300">
                   Políticas de Privacidad y Términos de Uso

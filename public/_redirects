@@ -1,0 +1,4 @@
+/tracking/*.*                    /tracking/:splat         200
+/assets/*                        /assets/:splat           200
+/tracking/*                      /tracking.html           200
+/*                               /index.html              200

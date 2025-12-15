@@ -64,11 +64,11 @@ const DesktopSidebar = () => {
       {/* Logo/Header */}
       <div className="mb-8">
         <img
-          src="https://storage.googleapis.com/hostinger-horizons-assets-prod/ce6b3f33-5fa3-4c63-a670-0869d616221b/e28c1dd880094048b81784be4521dd6c.png"
-          alt="Zinha Logo"
+          src="/images/logo_kunna.png"
+          alt="KUNNA Logo"
           className="h-12 mx-auto mb-2"
         />
-        <h2 className="text-center text-brand-primary font-serif text-lg">Tu espacio de confianza</h2>
+        <h2 className="text-center text-brand-primary font-serif text-lg">Bienestar + seguridad + acompañamiento</h2>
       </div>
       
       {/* Navegación */}
@@ -81,7 +81,7 @@ const DesktopSidebar = () => {
       {/* Footer del sidebar */}
       <div className="mt-8 pt-4 border-t border-brand-accent/20">
         <p className="text-xs text-brand-secondary text-center">
-          © 2025 Zinha - MÉXICO
+          © 2025 KUNNA - MÉXICO
         </p>
       </div>
     </aside>

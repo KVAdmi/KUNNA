@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seguimiento en Tiempo Real - Zinha</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Questrial:wght@400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --rose-dust: #c8a6a6;
+      --mauve-purple: #8d7583;
+      --lime-green: #c1d43a;
+      --dark-plum: #382a3c;
+      --light-lavender: #f5e6ff;
+      --white: #ffffff;
+      --navy: #23253a;
+      --glass-white: rgba(255,255,255,0.85);
+      --shadow-soft: 0 8px 32px rgba(56, 42, 60, 0.08);
+      --shadow-strong: 0 16px 48px rgba(56, 42, 60, 0.13);
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--light-lavender);
+      min-height: 100vh;
+      font-family: 'Questrial', sans-serif;
+      color: var(--dark-plum);
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 20px 0;
+    }
+    .logo-container {
+      margin-bottom: 16px;
+    }
+    .logo-image {
+      height: 80px;
+      width: auto;
+      margin-bottom: 16px;
+      filter: drop-shadow(0 4px 8px rgba(56, 42, 60, 0.1));
+    }
+    .brand-title {
+      font-size: 2.8rem;
+      font-weight: 600;
+      color: var(--dark-plum);
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .brand-subtitle {
+      font-size: 1.2rem;
+      color: var(--mauve-purple);
+      opacity: 0.9;
+      margin-bottom: 12px;
+    }
+    .accent-line {
+      width: 80px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--lime-green), var(--rose-dust));
+      margin: 0 auto;
+      border-radius: 2px;
+    }

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { useAuth } from '@/contexts/SupabaseAuthContext.jsx';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 import supabase from '@/lib/customSupabaseClient'
 import { PartyPopper, Heart, Loader2, AlertCircle, Check, ArrowRight, Sparkles } from 'lucide-react';
 
@@ -46,7 +46,7 @@ const PaymentSuccessPage = () => {
                         console.log('✅ Perfil actualizado correctamente');
                         toast({
                             title: '¡Pago exitoso! ',
-                            description: `Tu ${getPlanName(plan)} ha sido activado correctamente. Bienvenida a Zinha Premium.`,
+                            description: `Tu ${getPlanName(plan)} ha sido activado correctamente. ¡Bienvenida a KUNNA!`,
                             className: 'bg-green-100 border-green-400 text-green-800'
                         });
                         setStatus('success');
@@ -133,7 +133,7 @@ const PaymentSuccessPage = () => {
                             
                             <div className="flex items-center justify-center space-x-2 text-[#382a3c]/60">
                                 <Heart className="w-5 h-5 text-red-400" />
-                                <span>Bienvenida a Zinha Premium</span>
+                                <span>¡Bienvenida a KUNNA!</span>
                                 <Heart className="w-5 h-5 text-red-400" />
                             </div>
                         </motion.div>
@@ -198,8 +198,8 @@ const PaymentSuccessPage = () => {
             }}
         >
             <Helmet>
-                <title>Pago Exitoso - Zinha</title>
-                <meta name="description" content="Confirmación de tu suscripción a Zinha." />
+                <title>Pago Exitoso - KUNNA</title>
+                <meta name="description" content="Confirmación de tu suscripción a KUNNA." />
             </Helmet>
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}

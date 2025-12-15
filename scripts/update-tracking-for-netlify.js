@@ -10,7 +10,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const GOOGLE_API_KEY = 'AIzaSyCPPTBvh8bzf_r-rEIy_SzUgVX6xkI7q0g';
+const GOOGLE_API_KEY = 'AIzaSyBWwOIBjClToEXMqtAEMohrZEvNCPuKDAw';
 const TRACKING_HTML_PATH = path.join(__dirname, '../tracking.html');
 const DIST_TRACKING_PATH = path.join(__dirname, '../dist/tracking.html');
 

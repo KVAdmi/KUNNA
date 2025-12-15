@@ -5,7 +5,7 @@ import { Shield, Phone, FileDown, FolderHeart as HomeIcon, ChevronDown, ChevronU
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import useWindowSize from '@/hooks/useWindowSize';
-import { useAuth } from '@/contexts/SupabaseAuthContext.jsx';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 import supabase from '@/lib/customSupabaseClient';
 import { Link } from 'react-router-dom';
 
@@ -63,7 +63,7 @@ const SecurityModule = () => {
   const handleCallAssistance = () => {
     window.location.href = 'tel:911';
     toast({
-      title: "📞 Llamando a Asistencia Vita365",
+      title: "📞 Llamando a Asistencia de Emergencia",
       description: "Conectando con la línea de ayuda inmediata."
     });
   };
@@ -77,9 +77,9 @@ const SecurityModule = () => {
   const pagePaddingClass = isMobileView ? "p-4" : "p-0";
 
   return (
-    <div className={`fixed inset-0 w-full h-full bg-gradient-to-br from-[#fafafa] via-[#f8f8f8] to-[#f5f5f5] overflow-y-auto ${mainContainerClass}`}>
+    <div className={`min-h-screen w-full bg-gradient-to-br from-[#fafafa] via-[#f8f8f8] to-[#f5f5f5] pb-24 ${mainContainerClass}`}>
       <Helmet>
-        <title>Seguridad Personal - Zinha</title>
+        <title>Seguridad Personal - KUNNA</title>
         <meta name="description" content="Activa el botón de pánico, comparte tu ruta en tiempo real y gestiona tus contactos de confianza." />
       </Helmet>
 

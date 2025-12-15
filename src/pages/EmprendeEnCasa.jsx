@@ -309,8 +309,8 @@ export default function EmprendeEnCasa() {
   };
 
   const enviarIdea = () => {
-    const asunto = "Nueva idea de emprendimiento - Zinha App";
-    const cuerpo = `Hola equipo de Zinha,
+    const asunto = "Nueva idea de emprendimiento - KUNNA App";
+    const cuerpo = `Hola equipo de KUNNA,
 
 Me gustaría compartir una idea de emprendimiento:
 
@@ -327,14 +327,14 @@ Información adicional:
 Saludos,
 [Tu nombre]`;
 
-    const mailtoLink = `mailto:soporte@zinha.app?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+    const mailtoLink = `mailto:soporte@kunna.app?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
     window.location.href = mailtoLink;
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-brand-background via-white to-brand-accent/10 p-4 pb-24 space-y-8">
       <Helmet>
-        <title>Emprende en Casa - Zinha</title>
+        <title>Emprende en Casa - KUNNA</title>
         <meta name="description" content="Microideas rentables, paso a paso y sin humo." />
       </Helmet>
 

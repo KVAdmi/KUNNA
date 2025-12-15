@@ -127,8 +127,8 @@ export default function CommunityBlog() {
       </div>
 
       <Helmet>
-        <title>Revista Zinha — Comunidad</title>
-        <meta name="description" content="Historias reales de la comunidad Zinha. Comparte la tuya y dale voz a otras." />
+        <title>Revista KUNNA — Comunidad</title>
+        <meta name="description" content="Historias reales de la comunidad KUNNA. Comparte la tuya y dale voz a otras." />
         <style>{`
           .magazine-text{line-height:1.9;text-align:justify;hyphens:auto;font-family: 'Georgia', serif}
           .magazine-columns{column-count:1;column-gap:2.5rem}
@@ -168,7 +168,7 @@ export default function CommunityBlog() {
                 <div className="relative max-w-xs">
                   <img 
                     src="/images/Blog.png" 
-                    alt="Blog Zinha"
+                    alt="Blog KUNNA"
                     className="w-auto h-auto max-h-80 rounded-3xl shadow-xl group-hover:scale-110 transition-transform duration-700 ease-out"
                   />
                   
@@ -223,7 +223,7 @@ export default function CommunityBlog() {
                       textShadow: '0 4px 20px rgba(56, 42, 60, 0.2)'
                     }}
                   >
-                    REVISTA ZINHA
+                    REVISTA KUNNA
                   </h1>
                   
                   <div 

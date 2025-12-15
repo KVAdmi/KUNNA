@@ -4,7 +4,7 @@ import { join } from "path";
 
 const dist = "dist";
 const forbid = [
-  "public",                 // duplicado incorrecto
+  "public",                 // Volvemos a prohibir public para evitar duplicados
   ".htaccess",
   "debug-keyboard.html",
   "debug-tracking.html",

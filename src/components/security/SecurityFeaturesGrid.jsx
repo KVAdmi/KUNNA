@@ -1,7 +1,9 @@
 // ...imports
+import { getTrackingUrl } from '@/config/tracking';
+
 // Utilidad para abrir WhatsApp con token y ubicación
 function abrirWhatsConToken(token, lat, lng) {
-  const track = `https://tracking.zinha.app/track_${encodeURIComponent(token)}`;
+  const track = getTrackingUrl(token);
   const texto = encodeURIComponent(
     `🚨 Acompáñame\nToken: ${token}\n${lat && lng ? `Inicio: ${lat},${lng}\n` : ''}Mapa: ${track}`
   );
@@ -16,7 +18,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { AlertTriangle, Share2, PhoneCall, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '@/components/ui/use-toast';
-import { useAuth } from '@/contexts/SupabaseAuthContext.jsx';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 import supabase from '@/lib/customSupabaseClient'
 import BotonAuxilio from './BotonAuxilio';
 

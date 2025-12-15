@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet';
 import supabase from '@/lib/customSupabaseClient';
-import { useAuth } from '@/contexts/SupabaseAuthContext.jsx';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { HeartHandshake } from 'lucide-react';
 import AdminForm from '@/components/therapist-directory/AdminForm';
@@ -108,7 +108,7 @@ const TherapistDirectoryPage = () => {
   return (
     <div className="p-4 md:p-8 bg-gray-50 min-h-[100dvh] flex flex-col">
       <Helmet>
-        <title>Directorio de Terapeutas - Zinha</title>
+        <title>Directorio de Terapeutas - KUNNA</title>
         <meta name="description" content="Encuentra apoyo profesional en nuestro directorio de terapeutas de confianza." />
       </Helmet>
 

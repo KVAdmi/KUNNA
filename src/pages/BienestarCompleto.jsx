@@ -23,7 +23,7 @@ import {
   Volume2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/SupabaseAuthContext.jsx';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 import InteractiveTest from '@/components/InteractiveTest.jsx';
 import ArticleViewer from '@/components/ArticleViewer.jsx';
 
@@ -5220,7 +5220,7 @@ const BienestarCompleto = () => {
           transition={{ duration: 1, delay: 0.5 }}
           className="text-lg font-medium text-brand-primary italic"
         >
-          "Estás a un paso de sentirte más fuerte, más consciente y más libre. Zinha es tu aliada en este viaje."
+          "Estás a un paso de sentirte más fuerte, más consciente y más libre. KUNNA es tu aliada en este viaje."
         </motion.p>
       </div>
     </div>
@@ -5618,7 +5618,7 @@ const BienestarCompleto = () => {
         ></motion.div>
       </div>
       <Helmet>
-        <title>Tu Bienestar - Zinha</title>
+        <title>Tu Bienestar - KUNNA</title>
         <meta name="description" content="Módulo integral de salud femenina: nutrición, sexualidad, menopausia, fertilidad, salud emocional y test interactivos." />
       </Helmet>
 

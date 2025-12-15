@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Kunna Logo - Parpadeo Ultra Realista</title>
+
+<style>
+  body {
+    margin: 0;
+    background: #000;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .eye-container {
+    position: relative;
+    width: 340px;
+    height: 340px;
+    filter: drop-shadow(0 0 18px rgba(169, 212, 99, 0.45));
+  }
+
+  .kunna-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  /* Párpado superior más realista */
+  .upper-eyelid {
+    position: absolute;
+    top: 22%;
+    left: 15%;
+    width: 70%;
+    height: 8%;
+    background: linear-gradient(to bottom, #000 0%, rgba(0,0,0,0.9) 100%);
+    border-radius: 50%;
+    transform-origin: center top;
+    animation: natural-blink 4s infinite;
+    opacity: 0;
+  }
+
+  /* Párpado inferior (opcional, más sutil) */
+  .lower-eyelid {
+    position: absolute;
+    bottom: 32%;
+    left: 15%;
+    width: 70%;
+    height: 3%;
+    background: linear-gradient(to top, #000 0%, rgba(0,0,0,0.7) 100%);
+    border-radius: 50%;
+    transform-origin: center bottom;
+    animation: subtle-lower-blink 4s infinite;
+    opacity: 0;
+  }
+
+  @keyframes natural-blink {
+    0%   { opacity: 0; transform: scaleY(0); }
+    88%  { opacity: 0; transform: scaleY(0); }       /* Ojo completamente abierto */
+    90%  { opacity: 1; transform: scaleY(8); }       /* Cierre súper rápido */
+    92%  { opacity: 0; transform: scaleY(0); }       /* Apertura súper rápida */
+    100% { opacity: 0; transform: scaleY(0); }
+  }
+
+  @keyframes subtle-lower-blink {
+    0%   { opacity: 0; transform: scaleY(0); }
+    88%  { opacity: 0; transform: scaleY(0); }
+    90%  { opacity: 0.6; transform: scaleY(2); }     /* Párpado inferior sube un poquito */
+    92%  { opacity: 0; transform: scaleY(0); }
+    100% { opacity: 0; transform: scaleY(0); }
+  }
+
+  /* Efecto de brillito que desaparece cuando parpadea */
+  .eye-shine {
+    position: absolute;
+    top: 42%;
+    left: 47%;
+    width: 6%;
+    height: 6%;
+    background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: shine-blink 4s infinite;
+  }
+
+  @keyframes shine-blink {
+    0%   { opacity: 0.8; }
+    88%  { opacity: 0.8; }
+    90%  { opacity: 0; }    /* Brillo desaparece cuando parpadea */
+    92%  { opacity: 0.8; }  /* Brillo regresa */
+    100% { opacity: 0.8; }
+  }
+</style>
+
+</head>
+<body>
+  <div class="eye-container">
+    <img class="kunna-logo" src="./logo_kunna.png" alt="Kunna Logo">
+    <div class="upper-eyelid"></div>
+    <div class="lower-eyelid"></div>
+    <div class="eye-shine"></div>
+  </div>
+</body>
+</html>

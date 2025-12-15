@@ -21,7 +21,7 @@ const ZinhaInformaPage = () => {
   return (
     <div className="min-h-[100dvh] flex flex-col px-4 py-8 bg-brand-background text-brand-primary">
       <Helmet>
-        <title>Zinha Informa</title>
+        <title>KUNNA Informa</title>
         <meta
           name="description"
           content="Noticias de la comunidad, premios, salud y actualizaciones especiales."
@@ -47,7 +47,7 @@ const ZinhaInformaPage = () => {
             </svg>
           </div>
         </div>
-        <h1 className="text-4xl font-bold font-serif">Zinha Informa</h1>
+        <h1 className="text-4xl font-bold font-serif">KUNNA Informa</h1>
         <p className="text-brand-secondary mt-2 max-w-xl mx-auto">
           Noticias, concursos, premios mensuales y todo lo que necesitas saber
           para mantenerte conectada con la comunidad.

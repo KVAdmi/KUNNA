@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import supabase from '@/lib/customSupabaseClient';
-import { useAuth } from '@/contexts/SupabaseAuthContext.jsx';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 
 const GeolocationTest = () => {
   const { toast } = useToast();

@@ -3,12 +3,13 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import BackButton from '@/components/ui/BackButton';
-import { useAuth } from '@/contexts/SupabaseAuthContext.jsx';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useToast } from '@/components/ui/use-toast';
-import { CheckCircle, Star, Phone, Loader2, Gift } from 'lucide-react';
-import { loadStripe } from '@stripe/stripe-js';
+import { CheckCircle, Star, Heart, Shield, Loader2, Gift } from 'lucide-react';
 import supabase from '@/lib/customSupabaseClient.js';
 import { Toaster } from '@/components/ui/toaster';
+import MercadoPagoPaymentModal from '@/components/payment/MercadoPagoPaymentModal.jsx';
+import { KUNNA_PLANS } from '@/lib/mercadoPago.js';
 
 const PricingPage = () => {
   const navigate = useNavigate();
@@ -18,41 +19,71 @@ const PricingPage = () => {
   const [loading, setLoading] = useState(false);
   const [donationCode, setDonationCode] = useState('');
   const [showDonationCode, setShowDonationCode] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedPlanForPayment, setSelectedPlanForPayment] = useState(null);
 
-  // Configuración de Stripe
-  const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-  const stripePromise = STRIPE_PUBLISHABLE_KEY ? loadStripe(STRIPE_PUBLISHABLE_KEY) : null;
-  
-  // Verificar si Stripe está configurado
-  const isStripeConfigured = !!STRIPE_PUBLISHABLE_KEY && STRIPE_PUBLISHABLE_KEY !== 'pk_test_TU_CLAVE_PUBLICA_DE_STRIPE';
-  
+  // Planes de KUNNA con precios en pesos mexicanos
   const plans = {
-    basic: {
-      name: 'Básico',
-      price: 79,
-      priceId: STRIPE_PRICE_ID_BASIC,
-      features: [
-        'Acceso a toda la comunidad',
-        'Diario emocional ilimitado',
-        'Módulo de seguridad personal',
-        'Biblioteca Zinha completa',
-      ],
-    },
-    premium: {
-      name: 'Premium',
+    mensual: {
+      name: 'Mensual',
       price: 199,
-      priceId: STRIPE_PRICE_ID_PREMIUM,
+      period: 'mes',
       features: [
-        'Todos los beneficios del plan Básico',
-        'Asistencia y coberturas Zinha',
-        'Zona Holística exclusiva',
-        'Eventos y talleres premium',
+        'Acceso completo a KUNNA',
+        'Módulo de seguridad y SOS',
+        'Comunidad y chat rooms',
+        'Diario emocional personal',
+        'Biblioteca de recursos',
+        'Directorio de terapeutas',
+        'Agenda personal'
       ],
+      popular: false
     },
+    trimestral: {
+      name: 'Trimestral',
+      price: 497,
+      period: '3 meses',
+      savings: '17% descuento',
+      features: [
+        'Todo lo del plan mensual',
+        'Ahorro de $100 MXN',
+        'Acceso por 3 meses',
+        'Sin compromisos largos',
+      ],
+      popular: true
+    },
+    semestral: {
+      name: 'Semestral', 
+      price: 897,
+      period: '6 meses',
+      savings: '25% descuento',
+      features: [
+        'Todo lo del plan mensual',
+        'Ahorro de $297 MXN',
+        'Acceso por 6 meses',
+        'Mejor relación precio-valor',
+      ],
+      popular: false
+    },
+    anual: {
+      name: 'Anual',
+      price: 1497,
+      period: '12 meses',
+      savings: '37% descuento',
+      features: [
+        'Todo lo del plan mensual',
+        'Ahorro de $891 MXN',
+        'Acceso por 12 meses',
+        'Máximo ahorro posible',
+      ],
+      popular: false
+    }
   };
 
   const handleSelectPlan = (plan) => {
     setSelectedPlan(plan);
+    setSelectedPlanForPayment(plan);
+    setShowPaymentModal(true);
   };
   
   const handleDonationCode = async () => {
@@ -96,12 +127,14 @@ const PricingPage = () => {
         })
         .eq('codigo', donationCode.trim().toUpperCase());
 
-      // Actualizar perfil del usuario
+      // Actualizar perfil del usuario con nuevo schema de base de datos
       await supabase
         .from('profiles')
         .update({ 
-          tipo_plan: 'premium',
-          fecha_activacion: new Date().toISOString()
+          plan_activo: 'premium',
+          plan_tipo: 'donativo',
+          fecha_suscripcion: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
 
@@ -125,78 +158,47 @@ const PricingPage = () => {
     }
   };
   
-  const handleContinue = async () => {
-    if (!session || !user) {
+  const handlePaymentSuccess = async (paymentData) => {
+    try {
+      const { payment_id, status, payment_type } = paymentData;
+      
+      if (status === 'approved') {
+        // Actualizar suscripción del usuario usando la función de la base de datos
+        const { data, error } = await supabase.rpc('update_user_subscription', {
+          user_id: user.id,
+          plan_tipo: selectedPlanForPayment,
+          payment_id: payment_id
+        });
+        
+        if (error) throw error;
+        
+        toast({
+          title: '¡Pago exitoso!',
+          description: 'Tu suscripción ha sido activada correctamente.',
+        });
+        
+        // Redirigir a completar perfil o dashboard
+        navigate('/completar-perfil');
+      } else {
+        throw new Error('El pago no fue aprobado');
+      }
+    } catch (error) {
+      console.error('Error procesando pago:', error);
       toast({
         variant: 'destructive',
-        title: 'Debes iniciar sesión',
-        description: 'Para continuar, por favor inicia sesión o regístrate.',
+        title: 'Error',
+        description: 'Hubo un problema al procesar tu pago. Contacta al soporte.',
       });
-      navigate('/login');
-      return;
-    }
-    
-    setLoading(true);
-
-    try {
-        const stripe = await stripePromise;
-        if (!stripe) {
-            throw new Error("Stripe no está disponible. Por favor verifica la configuración.");
-        }
-
-        // Verificar configuración de Stripe
-        if (!isStripeConfigured) {
-            throw new Error("Stripe no está configurado correctamente. Contacta al administrador.");
-        }
-
-        // Datos del plan seleccionado
-        const planData = plans[selectedPlan];
-        
-        // Crear checkout session usando Stripe directamente
-        const { error } = await stripe.redirectToCheckout({
-          lineItems: [{ 
-            price_data: {
-              currency: 'mxn',
-              product_data: {
-                name: planData.name,
-                description: `Suscripción ${planData.name} - Zinha`,
-              },
-              unit_amount: planData.price * 100, // Convertir a centavos
-              recurring: {
-                interval: 'month'
-              }
-            },
-            quantity: 1 
-          }],
-          mode: 'subscription',
-          success_url: `${window.location.origin}/payment-success?plan=${selectedPlan}&session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${window.location.origin}/pricing`,
-          customer_email: user.email,
-          metadata: {
-            userId: user.id,
-            plan: selectedPlan
-          }
-        });
-
-        if (error) {
-          throw new Error(error.message);
-        }
-
-    } catch (error) {
-        console.error('Error en pago:', error);
-        toast({
-            variant: 'destructive',
-            title: 'Error',
-            description: error.message || "No se pudo iniciar el proceso de pago.",
-        });
-        setLoading(false);
+    } finally {
+      setShowPaymentModal(false);
+      setSelectedPlanForPayment(null);
     }
   };
 
-  const handleAssistanceCall = () => {
+  const handleKunnaSupport = () => {
     toast({
-      title: '🚧 Esta función aún no está implementada',
-      description: '¡Pero no te preocupes! Puedes solicitarla en tu próximo mensaje. 🚀'
+      title: '� Soporte KUNNA',
+      description: 'Estamos aquí para ti. Contáctanos en soporte@kunna.mx o a través del chat en la app.',
     });
   };
 
@@ -210,9 +212,9 @@ const PricingPage = () => {
         transition={{ duration: 0.5 }}
         className="w-full max-w-4xl mx-auto text-center"
       >
-        <img src="https://storage.googleapis.com/hostinger-horizons-assets-prod/ce6b3f33-5fa3-4c63-a670-0869d616221b/e28c1dd880094048b81784be4521dd6c.png" alt="Zinha Logo" className="h-20 mx-auto mb-4" />
-        <h1 className="text-4xl font-serif text-white mb-2">Elige tu Plan</h1>
-        <p className="text-lg text-brand-secondary mb-10">Únete a la sororidad y accede a todas las herramientas para tu bienestar.</p>
+        <img src="/images/logo_kunna.png" alt="KUNNA Logo" className="h-20 mx-auto mb-4" />
+        <h1 className="text-4xl font-serif text-white mb-2">Elige tu Plan KUNNA</h1>
+        <p className="text-lg text-brand-secondary mb-10">Bienestar + seguridad + acompañamiento para mujeres</p>
 
         <div className="grid md:grid-cols-2 gap-8">
           {Object.entries(plans).map(([key, plan]) => (
@@ -224,17 +226,22 @@ const PricingPage = () => {
                 selectedPlan === key ? 'border-2 border-brand-accent scale-105' : 'border-2 border-transparent'
               }`}
             >
-              {key === 'premium' && (
+              {key === 'trimestral' && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-accent text-white px-4 py-1 rounded-full text-sm font-bold flex items-center space-x-1 z-10">
                   <Star className="w-4 h-4" />
                   <span>Más Popular</span>
                 </div>
               )}
               <h2 className="text-3xl font-serif text-white mb-2">{plan.name}</h2>
-              <p className="text-5xl font-bold text-white mb-4">
-                ${plan.price}
-                <span className="text-lg font-normal text-brand-secondary">/mes</span>
-              </p>
+              <div className="mb-4">
+                <p className="text-5xl font-bold text-white">
+                  ${plan.price}
+                  <span className="text-lg font-normal text-brand-secondary">/{plan.period}</span>
+                </p>
+                {plan.savings && (
+                  <p className="text-brand-accent text-sm font-semibold">{plan.savings}</p>
+                )}
+              </div>
               <ul className="space-y-3 text-left text-brand-background/80 mb-8 flex-grow">
                 {plan.features.map((feature, i) => (
                   <li key={i} className="flex items-start space-x-2">
@@ -243,10 +250,10 @@ const PricingPage = () => {
                   </li>
                 ))}
               </ul>
-              {key === 'premium' && (
-                 <Button onClick={handleAssistanceCall} variant="secondary" className="w-full bg-brand-highlight hover:bg-yellow-400 text-brand-primary rounded-full text-md py-4 mt-4 flex items-center space-x-2">
-                    <Phone className="w-5 h-5"/>
-                    <span>Pedir Asistencia Línea Zinha</span>
+              {key === 'trimestral' && (
+                 <Button onClick={handleKunnaSupport} variant="secondary" className="w-full bg-brand-highlight hover:bg-yellow-400 text-brand-primary rounded-full text-md py-4 mt-4 flex items-center space-x-2">
+                    <Heart className="w-5 h-5"/>
+                    <span>Soporte KUNNA 💜</span>
                 </Button>
               )}
             </motion.div>
@@ -317,34 +324,30 @@ const PricingPage = () => {
           </motion.div>
         </div>
 
-        <Button
-          onClick={handleContinue}
-          disabled={loading || showDonationCode || !isStripeConfigured}
-          className="w-full max-w-md bg-brand-accent hover:bg-brand-secondary text-white rounded-full text-lg py-6 disabled:opacity-50"
-        >
-          {loading ? (
-            <Loader2 className="animate-spin" />
-          ) : !isStripeConfigured ? (
-            "Stripe no configurado"
-          ) : (
-            `Continuar con ${plans[selectedPlan].name}`
-          )}
-        </Button>
-
-        {!isStripeConfigured && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg max-w-md"
-          >
-            <p className="text-yellow-800 text-sm text-center">
-              ⚠️ Para activar los pagos, configura las claves de Stripe en el archivo .env:
-              <br />
-              <code className="text-xs">VITE_STRIPE_PUBLISHABLE_KEY</code>
-            </p>
-          </motion.div>
-        )}
+        <div className="mt-8 text-center">
+          <p className="text-white/70 text-sm mb-4">
+            💳 Pagos seguros con Mercado Pago • Acepta tarjetas de crédito y débito
+          </p>
+          <p className="text-white/50 text-xs">
+            Haz clic en cualquier plan para comenzar el proceso de suscripción
+          </p>
+        </div>
       </motion.div>
+      
+      {/* Modal de Mercado Pago */}
+      {showPaymentModal && selectedPlanForPayment && (
+        <MercadoPagoPaymentModal
+          plan={plans[selectedPlanForPayment]}
+          planId={selectedPlanForPayment}
+          user={user}
+          onSuccess={handlePaymentSuccess}
+          onCancel={() => {
+            setShowPaymentModal(false);
+            setSelectedPlanForPayment(null);
+          }}
+        />
+      )}
+      
       <Toaster />
     </div>
   );

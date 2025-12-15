@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet';
 import { FLAGS } from '../config/flags.ts';
-import { useAuth } from '@/contexts/SupabaseAuthContext.jsx';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 
 const HomePage = () => {
   const { user, profile } = useAuth();
@@ -11,8 +11,8 @@ const HomePage = () => {
   return (
     <div className="w-full bg-gradient-to-br from-[#f5e6ff] via-[#ffffff] to-[#f5e6ff] relative overflow-hidden">
       <Helmet>
-        <title>Zinha - Tu fuerza, tu espacio, tu mundo</title>
-        <meta name="description" content="Eres creadora de vida, de amor, de cambio. Zinha está aquí para protegerte, acompañarte y celebrar tu poder." />
+        <title>KUNNA - Tu fuerza, tu espacio, tu mundo</title>
+        <meta name="description" content="Eres creadora de vida, de amor, de cambio. KUNNA está aquí para protegerte, acompañarte y celebrar tu poder." />
       </Helmet>
 
       {/* Partículas flotantes de fondo */}
@@ -76,10 +76,10 @@ const HomePage = () => {
               <div className="relative w-40 h-40 mx-auto rounded-full bg-gradient-to-br from-white/30 via-white/20 to-white/10 backdrop-blur-xl border border-white/40 shadow-2xl p-4">
                 <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-white/5 rounded-full"></div>
                 
-                {/* LOGO REAL DE ZINHA */}
+                {/* LOGO REAL DE KUNNA */}
                 <img 
-                  src="/images/logo-zinha.png" 
-                  alt="Zinha Logo" 
+                  src="/images/logo_kunna.png" 
+                  alt="KUNNA Logo" 
                   className="w-full h-full object-contain relative z-10 drop-shadow-2xl transform group-hover:scale-105 transition-transform duration-500" 
                 />
                 
@@ -173,7 +173,7 @@ const HomePage = () => {
           >
             <p className="text-lg md:text-xl text-[#382a3c] font-['Questrial'] leading-relaxed text-center">
               <strong className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-[#382a3c] via-[#8d7583] to-[#c8a6a6] bg-clip-text text-transparent">
-                Zinha
+                KUNNA
               </strong>
               {' '}está aquí para{' '}
               <strong className="text-[#8d7583]">protegerte</strong>,{' '}
@@ -190,7 +190,7 @@ const HomePage = () => {
             className="pt-8"
           >
             <p className="text-sm md:text-base text-[#8d7583] font-['Questrial'] opacity-80">
-              Toca el menú y explora lo que Zinha tiene para ti
+              Toca el menú y explora lo que KUNNA tiene para ti
             </p>
           </motion.div>
         </motion.div>

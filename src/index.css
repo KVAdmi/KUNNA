@@ -8,49 +8,44 @@
   --brand-accent: #c8a6a6; /* Mauve */
   --brand-highlight: #c1d43a; /* Lime */
   --brand-dark-blue: #263152;
+  
+  /* Variables Zinha Meet */
+  --zinha-primary: #263152;
+  --zinha-secondary: #6f5a8e;
+  --zinha-accent: #e87bff;
   --brand-background: #f5e6ff; /* Light Lavender Background */
   --font-sans: 'Questrial', sans-serif;
   --font-serif: 'Questrial', sans-serif; /* Changed to Questrial for consistency */
 }
 
 /* Reset global básico */
-* {
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-/* Altura completa para que el contenedor de Jitsi no colapse */
-html, body, #root {
-  height: 100%;
+/* Configuración base de la página */
+  html, body, #root {
+  height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  background-color: transparent;
+  -webkit-overflow-scrolling: touch;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
-html,
-body,
-#root {
-  height: 100vh !important; /* Cambio de 100dvh a 100vh para mayor compatibilidad */
-  width: 100% !important;
-  overflow-x: hidden;
-  background-color: transparent; /* Evita fondo sólido si falla gradiente */
-  -webkit-overflow-scrolling: touch; /* Mejora scroll en iOS */
-  -webkit-tap-highlight-color: transparent; /* Quita highlight azul en móviles */
-  touch-action: manipulation; /* Mejor respuesta al tacto */
+body {
+  font-family: var(--font-sans);
+  color: var(--brand-primary);
+  overflow-y: auto;
 }
 
 .main-container {
   height: 100vh !important;
   display: flex !important;
   flex-direction: column !important;
-}
-
-body {
-  font-family: var(--font-sans);
-  background: transparent; /* en lugar de bg-brand-primary */
-  color: var(--brand-primary); /* mantiene tu color de texto */
-  margin: 0;
-  -webkit-overflow-scrolling: touch;
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
 }
 
 /* Contenedor principal de la app móvil */
@@ -180,7 +175,7 @@ textarea {
     --rdp-border-radius: 10px;
 }
 
-/* Tarot Card Flip Animation */
+/* Tarot Card Flip Animation & 3D Styles */
 .perspective-1000 {
   perspective: 1000px;
 }
@@ -194,6 +189,7 @@ textarea {
 .transform-rotate-y-180 {
   transform: rotateY(180deg);
 }
+
 @media (max-width: 768px) {
   .chat-header {
     position: static !important;
@@ -208,19 +204,13 @@ textarea {
   }
 }
 
-html, body {
-  height: 100vh; /* Cambiado para mayor compatibilidad móvil */
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
 /* Mejoras adicionales para móvil */
 @media screen and (max-width: 1024px) {
   html, body, #root {
     height: 100vh !important;
     min-height: 100vh !important;
   }
-  
+
   /* Asegurar que el gradiente de fondo siempre se vea */
   .mobile-app-container {
     min-height: 100vh !important;
@@ -397,27 +387,9 @@ select[class*="pl-12"] {
   box-shadow: 0 20px 40px rgba(56, 42, 60, 0.15);
 }
 
-/* Estilos para la tarjeta inspiracional 3D */
-.perspective-1000 {
-  perspective: 1000px;
-}
-
-.preserve-3d {
-  transform-style: preserve-3d;
-}
-
-.backface-hidden {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-.transform-rotate-y-180 {
-  transform: rotateY(180deg);
-}
-
 /* Efecto glass mejorado para la tarjeta inspiracional */
 .glass-inspirational {
-  background: linear-gradient(135deg, 
+  background: linear-gradient(135deg,
     rgba(245, 230, 255, 0.35) 0%,
     rgba(255, 255, 255, 0.25) 25%,
     rgba(200, 166, 166, 0.15) 50%,
@@ -426,11 +398,11 @@ select[class*="pl-12"] {
   backdrop-filter: blur(30px) saturate(1.5);
   -webkit-backdrop-filter: blur(30px) saturate(1.5);
   border: 2px solid;
-  border-image: linear-gradient(135deg, 
+  border-image: linear-gradient(135deg,
     rgba(255, 255, 255, 0.6) 0%,
     rgba(200, 166, 166, 0.4) 50%,
     rgba(255, 255, 255, 0.6) 100%) 1;
-  box-shadow: 
+  box-shadow:
     0 8px 32px rgba(56, 42, 60, 0.15),
     0 16px 64px rgba(200, 166, 166, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.7),
@@ -449,9 +421,9 @@ select[class*="pl-12"] {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(45deg, 
-    transparent 30%, 
-    rgba(255, 255, 255, 0.3) 50%, 
+  background: linear-gradient(45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.3) 50%,
     transparent 70%);
   transform: rotate(45deg);
   animation: crystal-shine 4s ease-in-out infinite;
@@ -477,7 +449,7 @@ select[class*="pl-12"] {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: 
+  background-image:
     radial-gradient(circle at 20% 30%, rgba(200, 166, 166, 0.3) 1px, transparent 1px),
     radial-gradient(circle at 80% 70%, rgba(193, 212, 58, 0.2) 1px, transparent 1px),
     radial-gradient(circle at 60% 20%, rgba(255, 255, 255, 0.4) 1px, transparent 1px);
@@ -501,7 +473,7 @@ select[class*="pl-12"] {
 .glass-inspirational:hover {
   backdrop-filter: blur(35px) saturate(1.8);
   -webkit-backdrop-filter: blur(35px) saturate(1.8);
-  box-shadow: 
+  box-shadow:
     0 12px 40px rgba(56, 42, 60, 0.2),
     0 20px 80px rgba(200, 166, 166, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.8),
@@ -559,3 +531,4 @@ select[class*="pl-12"] {
   border-image: linear-gradient(45deg, #ff9a9e, #fecfef) 1;
   animation: gradient-border 4s ease infinite;
 }
+

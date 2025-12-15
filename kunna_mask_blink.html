@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Kunna Logo PNG - Efecto Párpado</title>
+
+<style>
+  body {
+    margin: 0;
+    background: #000;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .eye-container {
+    position: relative;
+    width: 340px;
+    height: 340px;
+    filter: drop-shadow(0 0 18px rgba(169, 212, 99, 0.45));
+  }
+
+  .kunna-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  /* Párpado que cubre la parte superior - PARPADEO REALISTA */
+  .eyelid-mask {
+    position: absolute;
+    top: 10%;
+    left: 5%;
+    width: 90%;
+    height: 45%;
+    background: #000;
+    border-radius: 50% 50% 100% 100% / 60% 60% 100% 100%;
+    transform-origin: center bottom;
+    animation: super-realistic-blink 3.5s infinite;
+    opacity: 0;
+  }
+
+  @keyframes super-realistic-blink {
+    0%   { opacity: 0; transform: scaleY(0); }
+    85%  { opacity: 0; transform: scaleY(0); }     /* Ojo abierto */
+    87%  { opacity: 1; transform: scaleY(1); }     /* Cierre rápido */
+    89%  { opacity: 0; transform: scaleY(0); }     /* Apertura rápida */
+    100% { opacity: 0; transform: scaleY(0); }     /* Mantiene abierto */
+  }
+</style>
+
+</head>
+<body>
+  <div class="eye-container">
+    <img class="kunna-logo" src="./logo_kunna.png" alt="Kunna Logo">
+    <div class="eyelid-mask"></div>
+  </div>
+</body>
+</html>

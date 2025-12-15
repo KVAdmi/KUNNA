@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Kunna Logo Blink - El Ojo Parpadea</title>
+
+<style>
+  body {
+    margin: 0;
+    background: #000;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* Logo */
+  img {
+    width: 340px;  /* ajústalo si quieres más grande */
+    animation: blink 3s infinite ease-in-out;
+    filter: drop-shadow(0 0 18px rgba(169, 212, 99, 0.45));
+  }
+
+  /* Parpadeo de ojo - se cierra y se abre */
+  @keyframes blink {
+    0%   { transform: scaleY(1); }
+    7%   { transform: scaleY(0.05); }  /* Ojo cerrado */
+    14%  { transform: scaleY(1); }     /* Ojo abierto */
+    100% { transform: scaleY(1); }     /* Mantiene abierto hasta el siguiente parpadeo */
+  }
+</style>
+
+</head>
+<body>
+  <img src="./logo_kunna.png" alt="Kunna Logo">
+</body>
+</html>

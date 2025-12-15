@@ -144,7 +144,7 @@ const HolisticZone = () => {
   
     const handleAgendaClick = () => {
         const phoneNumber = "523310797565";
-        const message = "Hola Mau, vengo de Zinha y me gustaría agendar una lectura de carta astral y numerología. ✨";
+        const message = "Hola Mau, vengo de KUNNA y me gustaría agendar una lectura de carta astral y numerología. ✨";
         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
     };
@@ -263,7 +263,7 @@ const HolisticZone = () => {
             </div>
 
             <Helmet>
-                <title>Zona Holística - Zinha</title>
+                <title>Zona Holística - KUNNA</title>
                 <meta name="description" content="Conecta con tu espiritualidad a través de rituales, baños energéticos y meditaciones guiadas." />
             </Helmet>
 

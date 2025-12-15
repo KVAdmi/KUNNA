@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
-import { Users, PenSquare, MessageSquare, Video } from 'lucide-react';
+import { Users, PenSquare, MessageSquare } from 'lucide-react';
 import { Megaphone } from 'lucide-react';
 
 const CommunityModule = () => {
@@ -19,8 +19,8 @@ const CommunityModule = () => {
             </div>
 
             <Helmet>
-                <title>Comunidad - Zinha</title>
-                <meta name="description" content="Conéctate en el Blog Zinha, únete a salas de chat y participa en nuestra comunidad." />
+                <title>Comunidad - KUNNA</title>
+                <meta name="description" content="Conéctate en el Blog KUNNA, únete a salas de chat y participa en nuestra comunidad." />
             </Helmet>
 
             <div className="relative z-10 p-6 rounded-3xl m-4" style={{
@@ -134,7 +134,7 @@ const CommunityModule = () => {
                                 </div>
 
                                 <h2 className="text-3xl font-bold font-serif text-[#382a3c] mb-4 group-hover:text-[#263152] transition-colors duration-300">
-                                    Blog Zinha
+                                    Blog KUNNA
                                 </h2>
                                 <p className="text-[#8d7583] leading-relaxed text-lg">
                                     Comparte tu historia, lee las de otras y encuentra inspiración. Tu voz es parte de nuestra fuerza colectiva.
@@ -198,61 +198,6 @@ const CommunityModule = () => {
                             </div>
                         </div>
                     </Link>
-                </motion.div>
-
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9, y: 30 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.6 }}
-                    whileHover={{ scale: 1.02, y: -8 }}
-                    className="group cursor-pointer"
-                >
-                    <div 
-                        className="block"
-                        onClick={() => navigate("/conferencia-nueva")}
-                    >
-                        <div className="relative overflow-hidden rounded-3xl backdrop-blur-xl border border-white/30 shadow-2xl hover:shadow-3xl transition-all duration-500 p-8 h-full"
-                             style={{
-                                 background: 'linear-gradient(135deg, rgba(193, 212, 58, 0.15), rgba(200, 166, 166, 0.15), rgba(141, 117, 131, 0.10))',
-                             }}>
-                            
-                            {/* Efecto de brillo en hover */}
-                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                            </div>
-
-                            <div className="relative z-10 text-center">
-                                {/* Icono con efecto cristal mejorado */}
-                                <div className="relative mb-6 flex justify-center">
-                                    <div 
-                                        className="w-20 h-20 rounded-3xl flex items-center justify-center shadow-xl group-hover:scale-110 transition-all duration-500 backdrop-blur-lg border border-white/20"
-                                        style={{ 
-                                            background: 'linear-gradient(135deg, #c1d43a, #8d7583)',
-                                            boxShadow: '0 8px 32px rgba(193, 212, 58, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
-                                        }}
-                                    >
-                                        <Video className="w-10 h-10 text-white drop-shadow-lg" />
-                                        
-                                        {/* Brillo superior */}
-                                        <div className="absolute top-2 left-2 w-6 h-6 bg-white/30 rounded-full blur-md"></div>
-                                    </div>
-                                </div>
-
-                                <h2 className="text-3xl font-bold font-serif text-[#382a3c] mb-4 group-hover:text-[#263152] transition-colors duration-300">
-                                    Sala de Conferencias
-                                </h2>
-                                <p className="text-[#8d7583] leading-relaxed text-lg">
-                                    <strong>Videollamadas Zinha</strong><br />
-                                    Capacitaciones, conferencias y encuentros con expertos en vivo
-                                </p>
-
-                                {/* Decoración inferior */}
-                                <div className="mt-6 flex justify-center">
-                                    <div className="w-16 h-1 bg-gradient-to-r from-[#c1d43a] to-[#8d7583] rounded-full group-hover:w-24 transition-all duration-300"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </motion.div>
             </div>
             </div>
