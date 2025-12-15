@@ -1,18 +1,55 @@
-# Configuración de Netlify para Sistema de Tracking
-# Este archivo debe estar en la raíz del proyecto
-
-# Redirecciones para el sistema de tracking
+# 1) Nunca toques los assets estáticos
 [[redirects]]
-  from = "/tracking/*"
-  to = "/tracking.html"
+  from = "/assets/*"
+  to = "/assets/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/images/*"
+  to = "/images/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/branding/*"
+  to = "/branding/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/sw.js"
+  to = "/sw.js"
+  status = 200
+
+# 2) Redirecciones para subdominios
+[[redirects]]
+  from = "https://appzinha.com/tracking/*"
+  to = "https://tracking.zinha.app/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://tracking.zinha.app/*"
+  to = "https://tracking.kunna.help/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://meet.zinha.app/*"
+  to = "/meet"
   status = 200
   force = true
 
 [[redirects]]
-  from = "/track/*"
-  to = "/tracking.html"
-  status = 200
+  from = "https://www.zinha.app/*"
+  to = "https://kunna.help/:splat"
+  status = 301
   force = true
+
+# 3) SPA Catch-All - DEBE IR AL FINAL
+# Todas las rutas (incluyendo /track/:token) van a la SPA React
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
 
 # Headers de seguridad
 [[headers]]
@@ -32,7 +69,11 @@
     Expires = "0"
 
 # Configuración del sitio
-[build]
-  publish = "dist"
+# NOTA: Este archivo solo configura redirects y headers
+# El build se hace localmente con "npm run build"
+# Deploy manual: arrastra la carpeta dist/ a Netlify
 
-# BUILD:20250822-1021
+[build]
+  publish = "."
+
+# BUILD:20251212-1541
