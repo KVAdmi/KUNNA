@@ -348,7 +348,22 @@ export default function PublicTracking() {
                     <div><strong>Latitud:</strong> {tracking.latitud_actual.toFixed(6)}</div>
                     <div><strong>Longitud:</strong> {tracking.longitud_actual.toFixed(6)}</div>
                     {tracking?.precision_metros && (
-                      <div><strong>Precisión:</strong> ±{tracking.precision_metros}m</div>
+                      <>
+                        <div><strong>Precisión:</strong> ±{tracking.precision_metros}m</div>
+                        {/* FIX 5: Warning de precisión si >50m */}
+                        {tracking.precision_metros > 50 && (
+                          <div style={styles.warningPrecision}>
+                            ⚠️ Ubicación aproximada (±{tracking.precision_metros}m)
+                          </div>
+                        )}
+                      </>
+                    )}
+                    {/* Última actualización siempre visible */}
+                    {tracking?.ultima_actualizacion_ubicacion && (
+                      <div style={styles.lastUpdate}>
+                        <strong>Última actualización:</strong><br />
+                        {formatDate(tracking.ultima_actualizacion_ubicacion)}
+                      </div>
                     )}
                   </>
                 ) : (
@@ -498,6 +513,29 @@ const styles = {
     fontSize: '14px',
     color: '#6b7280',
     lineHeight: '1.8',
+  },
+  // FIX 5: Estilos para warning de precisión
+  warningPrecision: {
+    marginTop: '12px',
+    padding: '10px 14px',
+    background: '#fef3c7',
+    border: '1px solid #f59e0b',
+    borderRadius: '8px',
+    color: '#92400e',
+    fontSize: '13px',
+    fontWeight: '600',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+  },
+  lastUpdate: {
+    marginTop: '12px',
+    padding: '12px',
+    background: '#f0f9ff',
+    borderRadius: '8px',
+    fontSize: '13px',
+    color: '#1e40af',
+    lineHeight: '1.6',
   },
   liveIndicator: {
     display: 'flex',

@@ -28,7 +28,7 @@ const TarotReading = () => {
 const arcanos = [
   {
     "nombre": "03-La Emperatriz",
-    "imagen_url": "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/cartas-tarot//03-La%20Emperatriz.jpg",
+    "imagen_url": "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/cartas-tarot//03-La%20Emperatriz.jpg",
     "pasado": "Abundancia, creatividad, madre",
     "presente": "Fertilidad de ideas, proyectos floreciendo",
     "futuro": "Crecimiento, prosperidad",
@@ -39,7 +39,7 @@ const arcanos = [
   },
   {
     "nombre": "04-El Emperador",
-    "imagen_url": "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/cartas-tarot//04-El%20Emperador.jpg",
+    "imagen_url": "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/cartas-tarot//04-El%20Emperador.jpg",
     "pasado": "Estructura, figura paterna, disciplina",
     "presente": "Necesidad de orden o liderazgo",
     "futuro": "Estabilidad y control",
@@ -50,7 +50,7 @@ const arcanos = [
   },
   {
     "nombre": "05-Sumo Sacerdote",
-    "imagen_url": "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/cartas-tarot//05-Sumo%20Sacerdote.jpg",
+    "imagen_url": "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/cartas-tarot//05-Sumo%20Sacerdote.jpg",
     "pasado": "Tradiciones, educación, guía espiritual",
     "presente": "Búsqueda de consejo, comunidad",
     "futuro": "Enseñanza, compromiso espiritual",
@@ -61,7 +61,7 @@ const arcanos = [
   },
   {
     "nombre": "06-Los Enamorados",
-    "imagen_url": "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/cartas-tarot//06-Los%20Enamorados.jpg",
+    "imagen_url": "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/cartas-tarot//06-Los%20Enamorados.jpg",
     "pasado": "Decisiones importantes en relaciones",
     "presente": "Elección entre caminos o valores",
     "futuro": "Unión significativa, decisión importante",
@@ -72,7 +72,7 @@ const arcanos = [
   },
   {
     "nombre": "07-El Carro",
-    "imagen_url": "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/cartas-tarot//07-El%20Carro.jpg",
+    "imagen_url": "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/cartas-tarot//07-El%20Carro.jpg",
     "pasado": "Triunfo, superar obstáculos",
     "presente": "Avance, disciplina, enfoque",
     "futuro": "Victoria si mantienes dirección",
@@ -83,7 +83,7 @@ const arcanos = [
   },
   {
     "nombre": "08-La Fuerza",
-    "imagen_url": "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/cartas-tarot//08-La%20Fuerza.jpg",
+    "imagen_url": "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/cartas-tarot//08-La%20Fuerza.jpg",
     "pasado": "Superación de dificultades con calma",
     "presente": "Fortaleza interna, paciencia",
     "futuro": "Control interno, éxito mediante suavidad",
@@ -94,7 +94,7 @@ const arcanos = [
   },
   {
     "nombre": "09-El Ermitano",
-    "imagen_url": "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/cartas-tarot//09-El%20Ermitano.jpg",
+    "imagen_url": "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/cartas-tarot//09-El%20Ermitano.jpg",
     "pasado": "Retiro, introspección",
     "presente": "Búsqueda interior, soledad elegida",
     "futuro": "Sabiduría obtenida tras reflexión",
@@ -105,7 +105,7 @@ const arcanos = [
   },
   {
     "nombre": "10-La Rueda de la Fortuna",
-    "imagen_url": "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/cartas-tarot//10-La%20Rueda%20de%20la%20Fortuna.jpg",
+    "imagen_url": "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/cartas-tarot//10-La%20Rueda%20de%20la%20Fortuna.jpg",
     "pasado": "Cambios de destino, ciclos de vida",
     "presente": "Momento de cambio, flujo",
     "futuro": "Suerte, nuevos ciclos",
@@ -116,7 +116,7 @@ const arcanos = [
   },
   {
     "nombre": "11-La Justicia",
-    "imagen_url": "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/cartas-tarot//11-La%20Justicia.jpg",
+    "imagen_url": "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/cartas-tarot//11-La%20Justicia.jpg",
     "pasado": "Consecuencias de decisiones",
     "presente": "Necesidad de equilibrio y responsabilidad",
     "futuro": "Resultados justos",
@@ -127,7 +127,7 @@ const arcanos = [
   },
   {
     "nombre": "12-El Colgado",
-    "imagen_url": "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/cartas-tarot//12-El%20Colgado.jpg",
+    "imagen_url": "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/cartas-tarot//12-El%20Colgado.jpg",
     "pasado": "Periodo de pausa o sacrificio",
     "presente": "Necesidad de soltar o cambiar perspectiva",
     "futuro": "Claridad tras la espera",
@@ -138,7 +138,7 @@ const arcanos = [
   },
   {
     "nombre": "13-La Muerte",
-    "imagen_url": "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/cartas-tarot//13-La%20Muerte.jpg",
+    "imagen_url": "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/cartas-tarot//13-La%20Muerte.jpg",
     "pasado": "Transformación profunda",
     "presente": "Fin de una etapa",
     "futuro": "Renacimiento",
@@ -149,7 +149,7 @@ const arcanos = [
   },
   {
     "nombre": "14-La Templanza",
-    "imagen_url": "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/cartas-tarot//14-La%20Templanza.jpg",
+    "imagen_url": "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/cartas-tarot//14-La%20Templanza.jpg",
     "pasado": "Sanación, equilibrio logrado",
     "presente": "Moderación, paciencia",
     "futuro": "Armonía, integración",
@@ -160,7 +160,7 @@ const arcanos = [
   },
   {
     "nombre": "15-El Diablo",
-    "imagen_url": "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/cartas-tarot//15-El%20Diablo.jpg",
+    "imagen_url": "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/cartas-tarot//15-El%20Diablo.jpg",
     "pasado": "Apegos, excesos",
     "presente": "Dependencias, tentaciones",
     "futuro": "Liberación si se reconoce el problema",
@@ -171,7 +171,7 @@ const arcanos = [
   },
   {
     "nombre": "16-La Torre",
-    "imagen_url": "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/cartas-tarot//16-La%20Torre.jpg",
+    "imagen_url": "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/cartas-tarot//16-La%20Torre.jpg",
     "pasado": "Cambio repentino, ruptura",
     "presente": "Crisis, verdad revelada",
     "futuro": "Caída de estructuras falsas",
@@ -182,7 +182,7 @@ const arcanos = [
   },
   {
     "nombre": "17-La Estrella",
-    "imagen_url": "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/cartas-tarot//17-La%20Estrella.jpg",
+    "imagen_url": "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/cartas-tarot//17-La%20Estrella.jpg",
     "pasado": "Esperanza tras tiempos difíciles",
     "presente": "Fe, inspiración",
     "futuro": "Renovación, guía espiritual",
@@ -193,7 +193,7 @@ const arcanos = [
   },
   {
     "nombre": "18-La Luna",
-    "imagen_url": "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/cartas-tarot//18-La%20Luna.jpg",
+    "imagen_url": "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/cartas-tarot//18-La%20Luna.jpg",
     "pasado": "Confusión, ilusiones",
     "presente": "Intuición y miedos",
     "futuro": "Claridad tras confusión",
@@ -204,7 +204,7 @@ const arcanos = [
   },
   {
     "nombre": "19-El Sol",
-    "imagen_url": "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/cartas-tarot//19-El%20Sol.jpg",
+    "imagen_url": "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/cartas-tarot//19-El%20Sol.jpg",
     "pasado": "Alegría, éxito",
     "presente": "Vitalidad, claridad",
     "futuro": "Éxito y gozo",
@@ -215,7 +215,7 @@ const arcanos = [
   },
   {
     "nombre": "20-El Juicio",
-    "imagen_url": "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/cartas-tarot//20-El%20Juicio.jpg",
+    "imagen_url": "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/cartas-tarot//20-El%20Juicio.jpg",
     "pasado": "Llamado a despertar",
     "presente": "Momento de evaluación y perdón",
     "futuro": "Renacimiento, claridad",
@@ -226,7 +226,7 @@ const arcanos = [
   },
   {
     "nombre": "21-El Mundo",
-    "imagen_url": "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/cartas-tarot//21-El%20Mundo.jpg",
+    "imagen_url": "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/cartas-tarot//21-El%20Mundo.jpg",
     "pasado": "Culminación de un ciclo",
     "presente": "Integración, plenitud",
     "futuro": "Éxito y logro de metas",

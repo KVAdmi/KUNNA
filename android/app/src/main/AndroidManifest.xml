@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
     <!-- ===== Permisos ===== -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
@@ -30,14 +29,12 @@
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
 
     <application
-        android:name=".ZinhaApp"
         android:allowBackup="true"
-        android:label="Zinha"
+        android:label="Kunna"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <!-- Main Activity -->
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation"
@@ -46,19 +43,18 @@
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
             android:exported="true">
-
             <!-- Launch -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- Deep Link (esquema zinha:) -->
+            <!-- Deep Link (esquema kunna:) -->
             <intent-filter android:autoVerify="false">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="zinha" />
+                <data android:scheme="kunna" />
             </intent-filter>
 
             <!-- App Link verificable (https) -->
@@ -66,17 +62,23 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="kunna.app" android:pathPrefix="/tracking" />
+            </intent-filter>
+
+            <!-- OAuth Redirect (Supabase) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:scheme="https"
-                    android:host="zinha.app"
-                    android:pathPrefix="/tracking" />
+                    android:host="wpsysctbaxbtzyebcjlb.supabase.co"
+                    android:pathPrefix="/auth/v1/callback" />
             </intent-filter>
         </activity>
 
         <!-- Second Activity -->
-        <activity
-            android:name=".SecondActivity"
-            android:exported="true" />
+        <activity android:name=".SecondActivity" android:exported="true" />
 
         <!-- File provider -->
         <provider
@@ -84,15 +86,13 @@
             android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
         </provider>
 
         <!-- Quick Settings Tile -->
         <service
             android:name=".QuickSettingsTileService"
-            android:label="SOS Zinha"
+            android:label="SOS Kunna"
             android:icon="@mipmap/ic_launcher"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
             android:exported="true">
@@ -102,48 +102,48 @@
         </service>
 
         <!-- Widget -->
-        <receiver
-            android:name=".SOSWidgetProvider"
-            android:exported="true">
+        <receiver android:name=".SOSWidgetProvider" android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/sos_widget_info" />
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/sos_widget_info" />
         </receiver>
 
         <!-- Servicios de geolocalización -->
         <service
-            android:name=".ZinhaLocationService"
+            android:name=".KunnaLocationService"
             android:enabled="true"
             android:exported="false"
-            android:foregroundServiceType="location" />
+            android:foregroundServiceType="location"
+        />
 
         <service
             android:name=".SOSForegroundService"
             android:enabled="true"
             android:exported="false"
-            android:foregroundServiceType="location" />
+            android:foregroundServiceType="location"
+        />
 
-        <!-- ===== FCM: servicio de mensajería ===== -->
-        <service
-            android:name=".ZinhaMessagingService"
-            android:exported="false">
+        <!-- ===== FCM: servicio de mensajería (pendiente crear KunnaMessagingService.java) ===== -->
+        <!-- 
+        <service android:name=".KunnaMessagingService" android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+        -->
 
-        <!-- Canal por defecto para notificaciones de FCM (debe existir en ZinhaApp) -->
+        <!-- Canal por defecto para notificaciones de FCM -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="sos_alerts" />
+            android:value="sos_alerts"
+        />
 
         <!-- ===== Voz: wake word + comandos ===== -->
         <service
             android:name=".voice.VoiceTriggerService"
             android:exported="false"
-            android:foregroundServiceType="microphone" />
+            android:foregroundServiceType="microphone"
+        />
     </application>
 </manifest>

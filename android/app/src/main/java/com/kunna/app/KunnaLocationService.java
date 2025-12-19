@@ -1,4 +1,4 @@
-package com.zinha.app;
+package com.kunna.app;
 
 import android.app.*;
 import android.content.Intent;
@@ -8,8 +8,8 @@ import android.graphics.Color;
 import android.os.Build;
 import androidx.core.app.NotificationCompat;
 
-public class ZinhaLocationService extends Service {
-    private static final String CHANNEL_ID = "ZinhaSOSChannel";
+public class KunnaLocationService extends Service {
+    private static final String CHANNEL_ID = "KunnaSOSChannel";
     private static final int NOTIFICATION_ID = 1;
 
     @Override
@@ -28,7 +28,7 @@ public class ZinhaLocationService extends Service {
         );
 
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("SOS Zinha Activo")
+            .setContentTitle("SOS Kunna Activo")
             .setContentText("Estamos contigo. Tu ubicación está siendo monitoreada.")
             .setSmallIcon(R.drawable.ic_notification)
             .setColor(Color.parseColor("#E63946"))
@@ -45,10 +45,10 @@ public class ZinhaLocationService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID,
-                "SOS Zinha",
+                "SOS Kunna",
                 NotificationManager.IMPORTANCE_HIGH
             );
-            channel.setDescription("Canal para el servicio SOS de Zinha");
+            channel.setDescription("Canal para el servicio SOS de Kunna");
             channel.enableLights(true);
             channel.setLightColor(Color.RED);
             

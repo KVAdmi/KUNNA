@@ -66,53 +66,119 @@ import supabase from '@/lib/customSupabaseClient';
 import preciseLocationService from '@/lib/preciseLocationService';
 import { Capacitor } from '@capacitor/core';
 import { getTrackingUrl } from '@/config/tracking';
+import { Media } from '@capacitor-community/media';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 
-let mediaRecorderRef = null;
-let audioChunksRef = [];
+// 🎙️ AUDIO NATIVO - Variables globales para el loop
+let audioLoopInterval = null;
+let isRecordingNow = false;
 
-async function ensureMediaRecorderReady() {
-  if (mediaRecorderRef && mediaRecorderRef.state !== "inactive") return mediaRecorderRef;
+// 🎙️ Función para grabar UN chunk de 30s y subirlo
+async function recordAndUploadAudioChunk() {
+  if (isRecordingNow) {
+    console.log('[AUDIO NATIVO] Ya hay grabación en progreso, saltando...');
+    return;
+  }
 
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  mediaRecorderRef = new MediaRecorder(stream);
+  const acompId = window.__currentAcompId;
+  const userId = (await supabase.auth.getUser())?.data?.user?.id;
 
-  audioChunksRef = [];
-  mediaRecorderRef.ondataavailable = (e) => {
-    if (e.data && e.data.size > 0) audioChunksRef.push(e.data);
-  };
+  if (!acompId || !userId) {
+    console.error('[AUDIO NATIVO] Sin acompId o userId');
+    return;
+  }
 
-  mediaRecorderRef.onstop = () => {
-    const blob = new Blob(audioChunksRef, { type: "audio/webm" });
-    // TODO: subir o guardar blob
-    audioChunksRef = [];
-  };
-
-  return mediaRecorderRef;
-}
-
-export async function startRecordingAudio() {
   try {
-    const mr = await ensureMediaRecorderReady();
-    if (mr.state === "inactive") {
-      mr.start();
-      console.log("[AUDIO] Grabación iniciada");
+    isRecordingNow = true;
+    console.log('[AUDIO NATIVO] 🎙️ Iniciando grabación chunk 30s...');
+
+    // Iniciar grabación nativa
+    const { uri } = await Media.startRecording({
+      outputFormat: 'aac',
+      audioQuality: 'high',
+      duration: 30000
+    });
+
+    console.log('[AUDIO NATIVO] ✅ Grabación URI:', uri);
+    await new Promise(resolve => setTimeout(resolve, 30000));
+
+    const { uri: finalUri } = await Media.stopRecording();
+    console.log('[AUDIO NATIVO] ✅ Grabación completada:', finalUri);
+
+    const fileData = await Filesystem.readFile({ 
+      path: finalUri,
+      directory: Directory.Data
+    });
+
+    const byteString = atob(fileData.data);
+    const arrayBuffer = new ArrayBuffer(byteString.length);
+    const uint8Array = new Uint8Array(arrayBuffer);
+    for (let i = 0; i < byteString.length; i++) {
+      uint8Array[i] = byteString.charCodeAt(i);
     }
-  } catch (err) {
-    console.error("[AUDIO] No se pudo inicializar:", err);
+    const audioBlob = new Blob([uint8Array], { type: 'audio/aac' });
+    const fileName = `${userId}/${acompId}/audio_${Date.now()}.m4a`;
+
+    const { data, error } = await supabase.storage
+      .from('audios-panico')
+      .upload(fileName, audioBlob, {
+        contentType: 'audio/aac',
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (error) throw error;
+
+    await supabase.from('evidencias_sos').insert({
+      acompanamiento_id: acompId,
+      user_id: userId,
+      tipo: 'audio',
+      archivo_nombre: fileName.split('/').pop(),
+      archivo_path: fileName,
+      archivo_size_bytes: audioBlob.size,
+      duracion_segundos: 30,
+      metadata: { 
+        format: 'm4a',
+        native: true,
+        plugin: '@capacitor-community/media'
+      }
+    });
+
+    console.log('[AUDIO NATIVO] ✅ Chunk subido y registrado:', fileName);
+  } catch (error) {
+    console.error('[AUDIO NATIVO] ❌ Error en chunk:', error);
+  } finally {
+    isRecordingNow = false;
   }
 }
 
-export function stopRecordingAudio() {
-  try {
-    if (mediaRecorderRef && mediaRecorderRef.state === "recording") {
-      mediaRecorderRef.stop();
-      console.log("[AUDIO] Grabación detenida");
-    } else {
-      console.warn("[AUDIO] stop: no estaba grabando");
-    }
-  } catch (err) {
-    console.error("[AUDIO] Error al detener:", err);
+async function startNativeAudioLoop() {
+  if (audioLoopInterval) {
+    console.log('[AUDIO NATIVO] Loop ya iniciado');
+    return;
   }
+  console.log('[AUDIO NATIVO] 🔄 Iniciando loop continuo...');
+  await recordAndUploadAudioChunk();
+  audioLoopInterval = setInterval(async () => {
+    await recordAndUploadAudioChunk();
+  }, 32000);
+}
+
+async function stopNativeAudioLoop() {
+  if (audioLoopInterval) {
+    clearInterval(audioLoopInterval);
+    audioLoopInterval = null;
+    console.log('[AUDIO NATIVO] ✅ Loop detenido');
+  }
+  if (isRecordingNow) {
+    try {
+      await Media.stopRecording();
+    } catch (err) {
+      console.error('[AUDIO NATIVO] Error deteniendo:', err);
+    }
+  }
+  isRecordingNow = false;
 }
 
 const useEmergencyActionsExtended = () => {
@@ -135,9 +201,6 @@ const useEmergencyActionsExtended = () => {
   const [contacts, setContacts] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [mediaRecorder, setMediaRecorder] = useState(null);
-  const [audioStream, setAudioStream] = useState(null);
-  const [audioChunks, setAudioChunks] = useState([]);
 
   // 🔄 Función para cargar APIs dinámicamente y de forma segura
   const loadCapacitorAPIs = async () => {
@@ -240,14 +303,12 @@ const useEmergencyActionsExtended = () => {
     try {
       await preciseLocationService.stopWatch();
       
-      // 🛑 DETENER GRABACIÓN DE AUDIO SI ESTÁ ACTIVA
-      if (isRecording) {
-        try {
-          await stopRecordingAudio();
-          console.log('[SOS] Grabación de audio detenida');
-        } catch (audioErr) {
-          console.error('[SOS] Error al detener audio:', audioErr);
-        }
+      // 🛑 DETENER GRABACIÓN NATIVA DE AUDIO
+      try {
+        await stopNativeAudioLoop();
+        console.log('[SOS] ✅ Audio nativo detenido');
+      } catch (audioErr) {
+        console.error('[SOS] Error al detener audio nativo:', audioErr);
       }
       
       setIsFollowing(false);
@@ -256,6 +317,7 @@ const useEmergencyActionsExtended = () => {
           .update({ activo: false, fin: new Date().toISOString() })
           .eq('token', window.__currentTrackingToken);
         window.__currentTrackingToken = null;
+        window.__currentAcompId = null;
         toast({
           title: '🔒 Acompañamiento finalizado',
           description: 'Has llegado a tu destino de forma segura.'
@@ -370,39 +432,65 @@ const useEmergencyActionsExtended = () => {
         console.error('[SOS] Error al abrir tracking:', err);
       }
 
-      // Enviar enlaces a contactos por WhatsApp
-      const mensaje = `🚶‍♀️ ACOMPÁÑAME - Estoy en camino y quiero que me acompañes virtualmente.\n\n👀 Sigue mi ubicación en tiempo real aquí:\n${trackingUrlPublic}\n\n⚠️ Por favor mantén este enlace abierto hasta que llegue a mi destino.`;
+      // 📱 FIX 4: MENSAJE AUTOMÁTICO A CONTACTOS DE EMERGENCIA
+      const horaActual = new Date().toLocaleTimeString('es-MX', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      const mensajeSOS = `� SOS KUNNA ACTIVADO
+
+Estoy en una situación de riesgo. Sigue mi ubicación en tiempo real aquí:
+${trackingUrlPublic}
+
+Hora: ${horaActual}
+
+Si el link deja de actualizar, llama a emergencias.`;
+
+      // Enviar a TODOS los contactos usando Share nativo o WhatsApp
       for (const contact of contacts) {
         const telefono = contact.telefono.replace(/\D/g, '');
         if (!telefono || telefono.length < 10) {
-          toast({ title: '⚠️ Error WhatsApp', description: `Número inválido: ${contact.telefono}` });
-          console.error('[SOS] Número inválido para WhatsApp:', contact.telefono);
+          console.error('[SOS] Número inválido para contacto:', contact.telefono);
           continue;
         }
-        const urlScheme = `whatsapp://send?text=${encodeURIComponent(mensaje)}`;
-        const urlWeb = `https://wa.me/52${telefono}?text=${encodeURIComponent(mensaje)}`;
-    try {
-          const { AppLauncher } = await loadCapacitorAPIs();
-          if (AppLauncher) {
-            await AppLauncher.openUrl({ url: urlScheme });
+
+        try {
+          // Usar Share nativo si está disponible (Capacitor)
+          if (Capacitor.isNativePlatform()) {
+            await Share.share({
+              title: '🚨 SOS KUNNA ACTIVADO',
+              text: mensajeSOS,
+              url: trackingUrlPublic,
+              dialogTitle: `Compartir SOS con ${contact.nombre || telefono}`
+            });
           } else {
+            // Fallback web: abrir WhatsApp
+            const urlWeb = `https://wa.me/52${telefono}?text=${encodeURIComponent(mensajeSOS)}`;
             window.open(urlWeb, '_blank');
           }
+          
+          // Delay entre envíos para no saturar
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          
         } catch (err) {
-          toast({ title: '⚠️ Error WhatsApp', description: `No se pudo abrir WhatsApp para ${contact.telefono}` });
-          console.error('[SOS] Error WhatsApp:', err);
+          console.error('[SOS] Error enviando a contacto:', contact.nombre, err);
         }
-        await new Promise(resolve => setTimeout(resolve, 1500));
       }
+
+      toast({
+        title: '✅ SOS enviado',
+        description: `Mensaje compartido con ${contacts.length} contacto(s)`
+      });
 
       setIsFollowing(true);
       
-      // 🎙️ INICIAR GRABACIÓN DE AUDIO AUTOMÁTICAMENTE
+      // 🎙️ INICIAR GRABACIÓN NATIVA DE AUDIO EN LOOP
       try {
-        await startRecordingAudio();
-        console.log('[SOS] Grabación de audio iniciada automáticamente');
+        await startNativeAudioLoop();
+        console.log('[SOS] ✅ Audio nativo iniciado en loop continuo');
       } catch (audioErr) {
-        console.error('[SOS] Error al iniciar audio:', audioErr);
+        console.error('[SOS] Error al iniciar audio nativo:', audioErr);
         toast({ 
           title: '⚠️ Audio no disponible', 
           description: 'El tracking continúa sin grabación de audio.'
@@ -411,7 +499,7 @@ const useEmergencyActionsExtended = () => {
       
       toast({ 
         title: '✅ ¡Acompañamiento activo!',
-        description: 'Tu ubicación se comparte de forma segura. Grabando audio ambiente.'
+        description: 'Grabando audio nativo cada 30s. Ubicación en tiempo real.'
       });
 
     } catch (error) {
@@ -419,145 +507,6 @@ const useEmergencyActionsExtended = () => {
       toast({ title: '❌ Error al iniciar', description: error.message });
       await preciseLocationService.stopWatch();
       setIsFollowing(false);
-    }
-  };
-
-  // 🎙️ GRABACIÓN DE AUDIO CONTINUA
-  const startRecordingAudio = async () => {
-  console.log('[SOS] startRecordingAudio llamado. isRecording:', isRecording);
-    try {
-      const mr = await ensureMediaRecorderReady();
-      if (mr.state === "inactive") {
-        mr.start();
-        console.log("[AUDIO] Grabación iniciada");
-        setIsRecording(true);
-        toast({ 
-          title: '🎙️ Grabando 15 segundos...',
-          description: 'Grabación automática en progreso.'
-        });
-        // Detener automáticamente después de 15 segundos
-        setTimeout(async () => {
-          if (mr.state === "recording") {
-            mr.stop();
-            setIsRecording(false);
-            // Esperar a que termine la grabación y subir el audio
-            mr.onstop = async () => {
-              const audioBlob = new Blob(audioChunksRef, { type: "audio/webm" });
-              const userId = (await supabase.auth.getUser())?.data?.user?.id;
-              const trackingToken = window.__currentTrackingToken || Date.now();
-              const fileName = `${userId}/${trackingToken}/audio_${Date.now()}.webm`;
-              
-              const uploadResponse = await supabase.storage
-                .from('audios-panico')
-                .upload(fileName, audioBlob, {
-                  contentType: 'audio/webm',
-                  cacheControl: '3600'
-                });
-              
-              let audioUrl = null;
-              if (!uploadResponse.error) {
-                const { data } = supabase.storage
-                  .from('audios-panico')
-                  .getPublicUrl(fileName);
-                audioUrl = data?.publicUrl;
-                
-                // 💾 GUARDAR EN TABLA evidencias_sos
-                if (window.__currentAcompId && userId) {
-                  try {
-                    await supabase.from('evidencias_sos').insert({
-                      acompanamiento_id: window.__currentAcompId,
-                      user_id: userId,
-                      tipo: 'audio',
-                      archivo_nombre: fileName.split('/').pop(),
-                      archivo_path: fileName,
-                      archivo_size_bytes: audioBlob.size,
-                      duracion_segundos: 15,
-                      metadata: { format: 'webm', auto_recording: true }
-                    });
-                    console.log('[SOS] ✅ Audio registrado en evidencias_sos');
-                  } catch (dbErr) {
-                    console.error('[SOS] Error guardando evidencia en DB:', dbErr);
-                  }
-                }
-                
-                toast({
-                  title: '✅ Grabación guardada',
-                  description: 'Audio subido y registrado como evidencia.'
-                });
-              } else {
-                toast({
-                  title: '❌ Error al subir audio',
-                  description: uploadResponse.error.message
-                });
-              }
-              // Aquí puedes llamar a la función para enviar el audio y ubicación a los contactos automáticamente
-              if (audioUrl) {
-                await enviarAudioYUbicacionAContactos(audioUrl);
-              }
-            };
-          }
-        }, 15000);
-      }
-    } catch (error) {
-      console.error('Error al iniciar grabación:', error);
-      toast({
-        title: '❌ Error de micrófono',
-        description: 'No se pudo acceder al micrófono.'
-      });
-    }
-  };
-
-  // 🛑 DETENER GRABACIÓN
-  const stopRecordingAudio = async () => {
-  console.log('[SOS] stopRecordingAudio llamado. isRecording:', isRecording);
-    try {
-      if (!isRecording || !mediaRecorder) {
-        toast({ title: '⚠️ No hay grabación activa' });
-        return;
-      }
-
-
-      mediaRecorder.stop();
-      audioStream.getTracks().forEach(track => track.stop());
-
-      // Esperar a que termine la grabaci\u00f3n
-      await new Promise(resolve => {
-        mediaRecorder.onstop = resolve;
-      });
-
-      // Crear blob y subir a Supabase
-      const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-      const fileName = `panico_${window.__currentTrackingToken || Date.now()}.webm`;
-      console.log('[AUDIO] Blob generado', audioBlob);
-      console.log('[AUDIO] Intentando subir...', fileName);
-
-      const uploadResponse = await supabase.storage
-        .from('audios-panico')
-        .upload(fileName, audioBlob, {
-          contentType: 'audio/webm',
-          cacheControl: '3600'
-        });
-      if (uploadResponse.error) console.error('[SUPABASE] Error subiendo audio:', uploadResponse.error);
-      else console.log('[SUPABASE] Audio subido con éxito:', uploadResponse.data);
-      if (uploadResponse.error) throw uploadResponse.error;
-
-      // Limpiar estado
-      setMediaRecorder(null);
-      setAudioStream(null);
-      setAudioChunks([]);
-      setIsRecording(false);
-
-      toast({
-        title: '✅ Grabación guardada',
-        description: 'Audio guardado de forma segura'
-      });
-
-    } catch (error) {
-      console.error('Error al detener grabación:', error);
-      toast({
-        title: '❌ Error al guardar',
-        description: error.message
-      });
     }
   };
 
@@ -731,10 +680,8 @@ const capturarEvidenciaCamara = async () => {
   // 🛑 DETENER TODO
   const detenerTodo = async () => {
     try {
-      // Detener grabación si está activa
-      if (isRecording) {
-        await stopRecordingAudio();
-      }
+      // Detener audio nativo si está activo
+      await stopNativeAudioLoop();
 
       // Detener seguimiento si está activo
       if (isFollowing) {
@@ -755,46 +702,11 @@ const capturarEvidenciaCamara = async () => {
     }
   };
 
-  // Función para subir audio de pánico a Supabase
-const subirAudioPanico = async (blob) => {
-  const nombreArchivo = `audio_${Date.now()}.webm`;
-  const { data, error } = await supabase.storage
-    .from('audios-panico')
-    .upload(nombreArchivo, blob);
-
-  if (error) {
-    console.error("Error subiendo audio:", error);
-    return;
-  }
-
-  // Guarda en tabla audios_panico
-  await supabase.from('audios_panico').insert([
-    {
-      user_id: user.id,
-      acompanamiento_id: acompanamientoId,
-      archivo_nombre: nombreArchivo,
-      archivo_url: data.path,
-    },
-  ]);
-};
-
-if (mediaRecorder) {
-  mediaRecorder.ondataavailable = (event) => {
-    if (event.data.size > 0) {
-      subirAudioPanico(event.data);
-    }
-  };
-} else {
-  console.error("mediaRecorder no está inicializado");
-}
-
   return {
     contacts,
     isFollowing,
     isRecording,
     toggleCompanionship,
-    startRecordingAudio,
-    stopRecordingAudio,
     reproducirLlamadaSegura,
     reproducirSirena,
     enviarNotificacionSilenciosa,

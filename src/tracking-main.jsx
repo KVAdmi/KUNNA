@@ -19,7 +19,7 @@ const TrackingApp = () => {
 
   const obtenerSeguimientoPorToken = async (token) => {
     const response = await fetch(
-      'https://gptwzuqmuvzttajgjrry.supabase.co/rest/v1/rpc/obtener_seguimiento_por_token_v2',
+      'https://wpsysctbaxbtzyebcjlb.supabase.co/rest/v1/rpc/obtener_seguimiento_por_token_v2',
       {
         method: 'POST',
         headers: {

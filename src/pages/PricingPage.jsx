@@ -26,7 +26,7 @@ const PricingPage = () => {
   const plans = {
     mensual: {
       name: 'Mensual',
-      price: 199,
+      price: 99,
       period: 'mes',
       features: [
         'Acceso completo a KUNNA',
@@ -37,52 +37,13 @@ const PricingPage = () => {
         'Directorio de terapeutas',
         'Agenda personal'
       ],
-      popular: false
-    },
-    trimestral: {
-      name: 'Trimestral',
-      price: 497,
-      period: '3 meses',
-      savings: '17% descuento',
-      features: [
-        'Todo lo del plan mensual',
-        'Ahorro de $100 MXN',
-        'Acceso por 3 meses',
-        'Sin compromisos largos',
-      ],
       popular: true
-    },
-    semestral: {
-      name: 'Semestral', 
-      price: 897,
-      period: '6 meses',
-      savings: '25% descuento',
-      features: [
-        'Todo lo del plan mensual',
-        'Ahorro de $297 MXN',
-        'Acceso por 6 meses',
-        'Mejor relación precio-valor',
-      ],
-      popular: false
-    },
-    anual: {
-      name: 'Anual',
-      price: 1497,
-      period: '12 meses',
-      savings: '37% descuento',
-      features: [
-        'Todo lo del plan mensual',
-        'Ahorro de $891 MXN',
-        'Acceso por 12 meses',
-        'Máximo ahorro posible',
-      ],
-      popular: false
     }
   };
 
   const handleSelectPlan = (plan) => {
     setSelectedPlan(plan);
-    setSelectedPlanForPayment(plan);
+    setSelectedPlanForPayment('mensual'); // Solo plan mensual disponible
     setShowPaymentModal(true);
   };
   

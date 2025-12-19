@@ -6,13 +6,13 @@ plugins {
 }
 
 android {
-    namespace 'com.zinha.app'
-    compileSdk 34
+    namespace 'com.kunna.app'
+    compileSdk 35
 
     defaultConfig {
-        applicationId "com.zinha.app"
+        applicationId "com.kunna.app"
         minSdk 26
-        targetSdk 34
+        targetSdk 35
         versionCode 1
         versionName "1.0"
     }
@@ -38,10 +38,6 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    options.release = 17
 }
 
 dependencies {

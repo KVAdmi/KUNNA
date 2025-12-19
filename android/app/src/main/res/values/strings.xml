@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Zinha</string>
-    <string name="title_activity_main">Zinha</string>
-    <string name="package_name">com.zinha.app</string>
-    <string name="custom_url_scheme">com.zinha.app</string>
+    <string name="app_name">Kunna</string>
+    <string name="title_activity_main">Kunna</string>
+    <string name="package_name">com.kunna.app</string>
+    <string name="custom_url_scheme">com.kunna.app</string>
 </resources>

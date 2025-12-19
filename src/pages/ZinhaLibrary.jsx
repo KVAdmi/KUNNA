@@ -13,13 +13,13 @@ const ZinhaLibrary = () => {
   const [loading, setLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState(null);
 
-  // Lista estática de libros con las URLs que proporcionaste
+  // Lista estática de libros con las URLs actualizadas del bucket correcto
   const staticBooks = [
     {
       id: 1,
       titulo: "No Sé Cómo Mostrar Dónde Me Duele",
       autor: "Autor por determinar",
-      url_pdf: "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/biblioteca/No_se_como_mostrar_donde_me_duele.pdf",
+      url_pdf: "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/biblioteca/No_se_como_mostrar_donde_me_duele.pdf",
       descripcion: "Un libro sobre el dolor emocional y cómo expresarlo",
       categoria: "Autoayuda"
     },
@@ -27,7 +27,7 @@ const ZinhaLibrary = () => {
       id: 2,
       titulo: "Querido Yo, Vamos A Estar Bien",
       autor: "Autor por determinar", 
-      url_pdf: "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/biblioteca/Querido-Yo-Vamos-A-Estar-Bien%20.pdf",
+      url_pdf: "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/biblioteca/Querido-Yo-Vamos-A-Estar-Bien%20.pdf",
       descripcion: "Carta de amor propio y sanación personal",
       categoria: "Crecimiento Personal"
     },
@@ -35,7 +35,7 @@ const ZinhaLibrary = () => {
       id: 3,
       titulo: "Quién Entiende a los Hombres",
       autor: "Ana Von Rebeur",
-      url_pdf: "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/biblioteca/Quien-entiende-a-los-hombres-Ana-Von-Rebeur.pdf",
+      url_pdf: "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/biblioteca/Quien-entiende-a-los-hombres-Ana-Von-Rebeur.pdf",
       descripcion: "Reflexiones sobre las relaciones y la comprensión",
       categoria: "Relaciones"
     },
@@ -43,7 +43,7 @@ const ZinhaLibrary = () => {
       id: 4,
       titulo: "Sanando Heridas Mientras Rompo en Llanto",
       autor: "Jairo",
-      url_pdf: "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/biblioteca/Sanando%20Heridas%20Mientras%20Rompo%20en%20Llanto-Jairo.pdf",
+      url_pdf: "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/biblioteca/Sanando%20Heridas%20Mientras%20Rompo%20en%20Llanto-Jairo.pdf",
       descripcion: "Un proceso de sanación emocional profunda",
       categoria: "Sanación"
     },
@@ -51,7 +51,7 @@ const ZinhaLibrary = () => {
       id: 5,
       titulo: "Terapia para Llevar",
       autor: "Ana Pérez",
-      url_pdf: "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/biblioteca/Terapia%20para%20llevar%20-%20%20Ana%20Peerez.pdf",
+      url_pdf: "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/biblioteca/Terapia%20para%20llevar%20-%20%20Ana%20Peerez.pdf",
       descripcion: "Herramientas terapéuticas para el día a día",
       categoria: "Psicología"
     },
@@ -59,7 +59,7 @@ const ZinhaLibrary = () => {
       id: 6,
       titulo: "Volver a Soñar",
       autor: "Megan Maxwell",
-      url_pdf: "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/biblioteca/Volver%20a%20Sonar%20Megan%20Maxwell.pdf",
+      url_pdf: "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/biblioteca/Volver%20a%20Sonar%20Megan%20Maxwell.pdf",
       descripcion: "Redescubre la magia de los sueños y la esperanza",
       categoria: "Inspiración"
     }

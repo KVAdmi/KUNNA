@@ -138,6 +138,27 @@ class PreciseLocationService {
 
     this.currentTrackingInfo = { token };
 
+    // 🌍 THROTTLING GPS: Variables para controlar inserts
+    let lastInsertedPoint = null;
+    const MIN_DISTANCE_METERS = 10;
+    const MAX_PRECISION_METERS = 50;
+
+    // 📐 Calcular distancia entre dos coordenadas (Haversine)
+    const calculateDistance = (lat1, lon1, lat2, lon2) => {
+      const R = 6371e3; // Radio tierra en metros
+      const φ1 = lat1 * Math.PI / 180;
+      const φ2 = lat2 * Math.PI / 180;
+      const Δφ = (lat2 - lat1) * Math.PI / 180;
+      const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+      const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ/2) * Math.sin(Δλ/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+      return R * c; // Distancia en metros
+    };
+
     const updateLocation = async () => {
       try {
         const position = await this.getPreciseLocation({
@@ -148,22 +169,29 @@ class PreciseLocationService {
 
         console.log('📍 [BG-TASK] Nueva ubicación:', position);
 
+        const precision = Math.round(Number(position.accuracy) || 0);
+        const lat = Number(position.latitude);
+        const lng = Number(position.longitude);
+
+        // 🔄 SIEMPRE actualizar acompanamientos_activos (última ubicación conocida)
         const payload = {
-          latitud_actual: Number(position.latitude),
-          longitud_actual: Number(position.longitude),
-          precision_metros: Math.round(Number(position.accuracy) || 0),
+          latitud_actual: lat,
+          longitud_actual: lng,
+          precision_metros: precision,
           ubicacion_actual: {
-            lat: position.latitude,
-            lng: position.longitude,
-            accuracy: position.accuracy,
+            lat,
+            lng,
+            accuracy: precision,
             at: new Date().toISOString(),
           },
           ruta_seguimiento: [...(this.currentTrackingInfo.ruta_seguimiento || []), {
-            lat: position.latitude,
-            lng: position.longitude,
+            lat,
+            lng,
             at: new Date().toISOString(),
           }],
           ultima_actualizacion_ubicacion: new Date().toISOString(),
+          // Marcar si es aproximado
+          ubicacion_aproximada: precision > MAX_PRECISION_METERS
         };
 
         const { error: updateError } = await supabase
@@ -176,21 +204,53 @@ class PreciseLocationService {
           return;
         }
 
-        // 📍 INSERTAR PUNTO EN acompanamientos_puntos para polyline
-        if (window.__currentAcompId) {
+        // 📍 THROTTLING: Solo insertar punto si cumple criterios de calidad
+        let shouldInsert = false;
+        
+        if (!lastInsertedPoint) {
+          // Primer punto siempre se inserta
+          shouldInsert = true;
+          console.log('[GPS THROTTLING] ✅ Primer punto - se inserta');
+        } else {
+          const distance = calculateDistance(
+            lastInsertedPoint.lat,
+            lastInsertedPoint.lng,
+            lat,
+            lng
+          );
+          
+          console.log(`[GPS THROTTLING] Distancia: ${distance.toFixed(2)}m, Precisión: ${precision}m`);
+          
+          // Insertar si movió ≥10m O si la precisión es muy buena (<50m)
+          if (distance >= MIN_DISTANCE_METERS) {
+            shouldInsert = true;
+            console.log(`[GPS THROTTLING] ✅ Movimiento detectado (${distance.toFixed(2)}m) - se inserta`);
+          } else if (precision < MAX_PRECISION_METERS) {
+            shouldInsert = true;
+            console.log(`[GPS THROTTLING] ✅ Precisión excelente (${precision}m) - se inserta`);
+          } else {
+            console.log(`[GPS THROTTLING] ⏭️ Descartado - sin movimiento (${distance.toFixed(2)}m) y precisión regular (${precision}m)`);
+          }
+        }
+
+        // 💾 Insertar en tabla de puntos solo si cumple criterios
+        if (shouldInsert && window.__currentAcompId) {
           try {
             await supabase.from('acompanamientos_puntos').insert({
               acompanamiento_id: window.__currentAcompId,
-              latitud: Number(position.latitude),
-              longitud: Number(position.longitude),
-              precision_metros: Math.round(Number(position.accuracy) || 0),
+              latitud: lat,
+              longitud: lng,
+              precision_metros: precision,
               velocidad_mps: position.speed || null,
               rumbo_grados: position.heading || null,
               proveedor: 'gps',
               en_movimiento: true,
               recorded_at: new Date().toISOString()
             });
-            console.log('[POLYLINE] ✅ Punto GPS guardado');
+            
+            // Actualizar último punto insertado
+            lastInsertedPoint = { lat, lng };
+            console.log('[POLYLINE] ✅ Punto GPS guardado (precisión:', precision, 'm)');
           } catch (pointErr) {
             console.error('[POLYLINE] Error guardando punto:', pointErr);
           }
@@ -198,8 +258,11 @@ class PreciseLocationService {
 
         console.info('[SUPABASE] Ubicación actualizada', {
           token,
-          lat: payload.latitud_actual,
-          lng: payload.longitud_actual,
+          lat,
+          lng,
+          precision,
+          aproximada: precision > MAX_PRECISION_METERS,
+          insertado: shouldInsert
         });
       } catch (error) {
         console.error('[BG-TASK] Error en actualización:', error);

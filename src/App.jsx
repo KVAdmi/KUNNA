@@ -15,7 +15,7 @@ import DesktopSidebar from '@/components/DesktopSidebar.jsx';
 import FooterBottomNavigation from '@/components/global/FooterBottomNavigation.jsx';
 
 import ChatRoomPageSimple from '@/pages/ChatRoomPageSimple.jsx';
-import LandingPage from '@/pages/LandingPage.jsx';
+import VideoIntro from '@/pages/VideoIntro.jsx';
 import LoginPage from '@/pages/LoginPage.jsx';
 import RegisterPage from '@/pages/RegisterPage';
 import ResetPasswordPage from '@/pages/ResetPasswordPage.jsx';
@@ -111,8 +111,7 @@ const AuthRoutes = () => {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<Navigate to="/landing" replace />} />
-        <Route path="/landing" element={<LandingPage />} />
+        <Route path="/" element={<VideoIntro />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -123,7 +122,7 @@ const AuthRoutes = () => {
         <Route path="/confirm-email" element={<EmailConfirmationHelper />} />
         {/* 🎯 TRACKING PÚBLICO - Sin autenticación requerida */}
         <Route path="/track/:token" element={<PublicTracking />} />
-        <Route path="*" element={<Navigate to="/landing" />} />
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </AnimatePresence>
   );
@@ -137,7 +136,7 @@ function AppContent() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const location = useLocation();
-  const isAuthPage = ['/landing', '/login', '/register', '/reset-password', '/pricing', '/legal'].includes(location.pathname);
+  const isAuthPage = ['/login', '/register', '/reset-password', '/pricing', '/legal'].includes(location.pathname);
   const isTrackingPage = location.pathname.startsWith('/track/');
   const isInChatRoom = location.pathname.includes('/comunidad/sala/');
 

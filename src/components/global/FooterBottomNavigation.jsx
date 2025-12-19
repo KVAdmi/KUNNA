@@ -1,138 +1,25 @@
-// ✅ FooterBottomNavigation.jsx - SOS Simplificado
+// ✅ FooterBottomNavigation.jsx - SOS CON TRACKING REAL
 import React, { useState } from 'react';
 import { AlertTriangle, PhoneCall, User, Home } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import supabase from '@/lib/customSupabaseClient';
+import useEmergencyActionsExtended from '@/hooks/useEmergencyActionsExtended';
 
 const FooterBottomNavigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
-  const [grabando, setGrabando] = useState(false);
+  
+  // 🎯 USAR EL HOOK REAL CON TRACKING + AUDIO
+  const { toggleCompanionship, isFollowing } = useEmergencyActionsExtended();
 
-  // Función SOS SIMPLIFICADA - Envía ubicación inmediatamente
+  // Función SOS REAL - Llama al hook que hace tracking + audio + evidencias
   const handleSOS = async () => {
-    if (grabando) return;
-    setGrabando(true);
-
-    try {
-      console.log('🚨 SOS INICIADO');
-      toast({ title: '🚨 SOS ACTIVADO', description: 'Obteniendo ubicación...' });
-
-      // 1. Verificar usuario
-      if (!user) {
-        toast({ variant: 'destructive', title: '❌ Error', description: 'No hay sesión activa' });
-        setGrabando(false);
-        return;
-      }
-
-      // 2. Buscar contacto de emergencia
-      console.log('📞 Buscando contactos de emergencia...');
-      const { data: contactos, error: errContactos } = await supabase
-        .from('contactos_emergencia')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('activo', true)
-        .order('prioridad', { ascending: true });
-
-      console.log('Contactos encontrados:', contactos);
-
-      if (errContactos || !contactos || contactos.length === 0) {
-        toast({ 
-          variant: 'destructive', 
-          title: '❌ Sin contactos', 
-          description: 'Debes agregar contactos de emergencia en tu perfil primero' 
-        });
-        setGrabando(false);
-        return;
-      }
-
-      const contacto = contactos[0];
-      const numero = (contacto.telefono || '').replace(/\D/g, '');
-
-      if (!numero || numero.length < 10) {
-        toast({ variant: 'destructive', title: '❌ Error', description: 'Teléfono de contacto inválido' });
-        setGrabando(false);
-        return;
-      }
-
-      // 3. Obtener ubicación (simplificado)
-      console.log('📍 Obteniendo ubicación GPS...');
-      let lat = 0, lon = 0, precision = 0;
-      
-      try {
-        const position = await new Promise((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
-          });
-        });
-        
-        lat = position.coords.latitude;
-        lon = position.coords.longitude;
-        precision = position.coords.accuracy;
-        console.log(`✅ Ubicación obtenida: ${lat}, ${lon}`);
-      } catch (error) {
-        console.warn('⚠️ No se pudo obtener ubicación precisa:', error);
-        toast({ 
-          title: '⚠️ Sin GPS', 
-          description: 'Enviando SOS sin ubicación precisa'
-        });
-      }
-
-      // 4. Crear mensaje de WhatsApp
-      const mensajeWA = `🚨 EMERGENCIA KUNNA 🚨
-
-Esta persona necesita ayuda URGENTE.
-
-${lat !== 0 ? `📍 Ubicación: https://maps.google.com/?q=${lat},${lon}
-Precisión: ${Math.round(precision)}m` : '⚠️ Sin ubicación GPS disponible'}
-
-⏰ ${new Date().toLocaleString('es-MX')}
-
-Enviado desde KUNNA - App de Seguridad para Mujeres`;
-
-      console.log('💬 Mensaje WhatsApp creado');
-
-      // 5. Abrir WhatsApp INMEDIATAMENTE
-      const waUrl = `https://wa.me/${numero}?text=${encodeURIComponent(mensajeWA)}`;
-      console.log('📱 Abriendo WhatsApp:', waUrl);
-      window.location.href = waUrl; // Usar location.href en vez de window.open
-
-      // 6. Guardar evento en background
-      try {
-        await supabase.from('eventos_peligro').insert({
-          user_id: user.id,
-          latitud: lat,
-          longitud: lon,
-          mensaje: mensajeWA,
-          enviado: true,
-          created_at: new Date().toISOString()
-        });
-        console.log('✅ Evento guardado en DB');
-      } catch (dbError) {
-        console.error('Error guardando en DB:', dbError);
-      }
-
-      toast({ 
-        title: '✅ SOS ENVIADO', 
-        description: `Enviando a ${contacto.nombre || contacto.telefono}`
-      });
-
-    } catch (error) {
-      console.error('❌ Error SOS:', error);
-      toast({ 
-        variant: 'destructive', 
-        title: '❌ Error', 
-        description: error.message || 'Error al enviar SOS'
-      });
-    } finally {
-      setGrabando(false);
-    }
+    console.log('🚨 [FOOTER] SOS Button clicked - Calling toggleCompanionship()');
+    await toggleCompanionship();
   };
 
   const botones = [
@@ -144,10 +31,10 @@ Enviado desde KUNNA - App de Seguridad para Mujeres`;
     },
     {
       icono: <AlertTriangle size={24} color="white" />,
-      color: '#490000',
-      titulo: 'SOS',
+      color: isFollowing ? '#10b981' : '#490000', // Verde si activo, rojo si no
+      titulo: isFollowing ? 'Detener' : 'SOS',
       onClick: handleSOS,
-      disabled: grabando
+      disabled: false
     },
     {
       icono: <PhoneCall size={24} color="white" />,

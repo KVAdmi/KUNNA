@@ -171,6 +171,37 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      setLoading(true);
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
+        }
+      });
+
+      if (error) {
+        console.error('Google sign in error:', error);
+        throw error;
+      }
+
+      console.log('Google OAuth initiated');
+      return { data, error: null };
+      
+    } catch (error) {
+      console.error('Error in signInWithGoogle:', error);
+      return { data: null, error };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const signOut = async () => {
     try {
       setLoading(true);
@@ -218,6 +249,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     signIn,
     signUp,
+    signInWithGoogle,
     signOut,
     isAdmin,
     hasAccess,
@@ -225,7 +257,8 @@ export const AuthProvider = ({ children }) => {
     // Para compatibilidad con componentes existentes
     isAuthenticated: !!user,
     login: signIn,
-    logout: signOut
+    logout: signOut,
+    handleRegister: signUp
   };
 
   return (

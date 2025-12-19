@@ -11,7 +11,7 @@ VALUES (
   'audios-panico',
   false, -- PRIVADO
   10485760, -- 10MB max
-  ARRAY['audio/webm', 'audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/m4a']
+  ARRAY['audio/webm', 'audio/mp4', 'audio/mpeg', 'audio/wav', 'audio/m4a', 'audio/aac', 'audio/x-m4a']
 )
 ON CONFLICT (id) DO NOTHING;
 
