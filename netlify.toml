@@ -75,5 +75,10 @@
 
 [build]
   publish = "."
+  functions = "netlify/functions"
 
-# BUILD:20251212-1541
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# BUILD:20251219-HOLISTICO
