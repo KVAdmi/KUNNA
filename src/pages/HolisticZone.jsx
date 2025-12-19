@@ -159,7 +159,10 @@ const HolisticZone = () => {
         setLecturaResult(null);
 
         try {
-            const response = await fetch('/.netlify/functions/holistico-reading', {
+            // URL absoluta para app nativa (Capacitor)
+            const API_URL = 'https://kunna.help/.netlify/functions/holistico-reading';
+            
+            const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
