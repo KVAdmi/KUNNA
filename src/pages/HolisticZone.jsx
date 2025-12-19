@@ -141,6 +141,10 @@ const Accordion = ({ icon: Icon, title, content }) => {
 };
 
 const HolisticZone = () => {
+    // Estado para lectura holística
+    const [loading, setLoading] = useState(false);
+    const [lecturaResult, setLecturaResult] = useState(null);
+    const [error, setError] = useState(null);
   
     const handleAgendaClick = () => {
         const phoneNumber = "523310797565";
@@ -149,49 +153,79 @@ const HolisticZone = () => {
         window.open(whatsappUrl, '_blank');
     };
 
+    const handleLecturaHolistica = async () => {
+        setLoading(true);
+        setError(null);
+        setLecturaResult(null);
+
+        try {
+            const response = await fetch('/.netlify/functions/holistico-reading', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    fecha_nacimiento: '1990-05-15', // TODO: input del usuario
+                    name: 'Usuario KUNNA',
+                    pregunta: '¿Qué mensaje tiene el universo para mí hoy?'
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            setLecturaResult(data);
+        } catch (err) {
+            console.error('Error obteniendo lectura:', err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const rituals = [
   {
     title: "Ritual de Abundancia y Prosperidad",
-    url: "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/rituales/Ritual-de-Abundancia-y-Prosperidad.pdf"
+    url: "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/Rituales/Ritual-de-Abundancia-y-Prosperidad.pdf"
   },
   {
     title: "Ritual de Amor Propio y Autoaceptación",
-    url: "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/rituales/Ritual-de-Amor-Propio-y-Autoaceptacion.pdf"
+    url: "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/Rituales/Ritual-de-Amor-Propio-y-Autoaceptacion.pdf"
   },
   {
     title: "Ritual de Manifestación de Sueños",
-    url: "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/rituales/Ritual-de-Manifestacion-de-Suenos.pdf"
+    url: "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/Rituales/Ritual-de-Manifestacion-de-Suenos.pdf"
   },
   {
     title: "Ritual de Protección Energética",
-    url: "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/rituales/Ritual-de-Proteccion-Energetica.pdf"
+    url: "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/Rituales/Ritual-de-Proteccion-Energetica.pdf"
   },
   {
     title: "Ritual de Sanación Emocional",
-    url: "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/rituales/Ritual-de-Sanacion-Emocional.pdf"
+    url: "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/Rituales/Ritual-de-Sanacion-Emocional.pdf"
   }
 ];
     
     const energeticBaths = [
   {
-    title: "Baño de Belleza Natural",
-    url: "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/banos-energeticos/Bano-Energetico-Belleza-Natural.pdf"
+    title: "Limpieza de Belleza Natural",
+    url: "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/Rituales/Limpia-Energetico-Belleza-Natural.pdf"
   },
   {
-    title: "Baño para Cultivar Gratitud",
-    url: "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/banos-energeticos/Bano-Energetico-Cultivar-Gratitud.pdf"
+    title: "Limpieza para Cultivar Gratitud",
+    url: "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/Rituales/Limpia-Energetico-Cultivar-Gratitud.pdf"
   },
   {
-    title: "Baño de Limpieza y Purificación",
-    url: "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/banos-energeticos/Bano-Energetico-Limpieza-y-Purificacion.pdf"
+    title: "Limpieza de Limpieza y Purificación",
+    url: "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/Rituales/Limpia-Energetico-Limpieza-y-Purificacion.pdf"
   },
   {
-    title: "Baño de Renovación y Vitalidad",
-    url: "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/banos-energeticos/Bano-Energetico-Renovacion-y-Vitalidad.pdf"
+    title: "Limpieza de Renovación y Vitalidad",
+    url: "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/Rituales/Limpia-Energetico-Renovacion-y-Vitalidad.pdf"
   },
   {
-    title: "Baño de Sexualidad y Sensualidad",
-    url: "https://gptwzuqmuvzttajgjrry.supabase.co/storage/v1/object/public/banos-energeticos/Bano-Energetico-Sexualidad-y-Sensualidad.pdf"
+    title: "Limpieza de Sexualidad y Sensualidad",
+    url: "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/Rituales/Limpia-Energetico-Sexualidad-y-Sensualidad.pdf"
   }
 ];
 
@@ -264,7 +298,7 @@ const HolisticZone = () => {
 
             <Helmet>
                 <title>Zona Holística - KUNNA</title>
-                <meta name="description" content="Conecta con tu espiritualidad a través de rituales, baños energéticos y meditaciones guiadas." />
+                <meta name="description" content="Conecta con tu espiritualidad a través de rituales, limpiezas energéticas y meditaciones guiadas." />
             </Helmet>
 
             {/* Contenedor cristal principal */}
@@ -413,7 +447,7 @@ const HolisticZone = () => {
                     />
                     <Accordion
                         icon={Droplets}
-                        title="Baños Energéticos"
+                        title="Limpiezas Energéticas"
                         content={
                             <motion.div variants={contentVariants} initial="hidden" animate="visible" className="space-y-3">
                                 {energeticBaths.map((item, index) => (
@@ -439,6 +473,64 @@ const HolisticZone = () => {
                         icon={Wand2}
                         title="Tarot"
                         content={<TarotReading />}
+                    />
+                    <Accordion
+                        icon={Sparkles}
+                        title="Lectura Holística (Beta)"
+                        content={
+                            <div className="space-y-4">
+                                <p className="text-[#f5e6ff]/80 text-sm">
+                                    Obtén una lectura unificada de Tarot, Numerología y Astrología.
+                                </p>
+                                
+                                <motion.button
+                                    onClick={handleLecturaHolistica}
+                                    disabled={loading}
+                                    className="w-full px-6 py-3 font-bold rounded-xl text-lg shadow-xl transform transition-all duration-300"
+                                    style={{
+                                        background: loading 
+                                            ? 'linear-gradient(135deg, rgba(193, 212, 58, 0.3), rgba(245, 230, 255, 0.3))'
+                                            : 'linear-gradient(135deg, #c1d43a, #f5e6ff)',
+                                        color: '#263152',
+                                        opacity: loading ? 0.6 : 1
+                                    }}
+                                    whileHover={!loading ? { scale: 1.02 } : {}}
+                                    whileTap={!loading ? { scale: 0.98 } : {}}
+                                >
+                                    {loading ? '🔮 Consultando el cosmos...' : '✨ Obtener lectura'}
+                                </motion.button>
+
+                                {error && (
+                                    <div className="p-4 rounded-lg bg-red-500/20 border border-red-500/40">
+                                        <p className="text-red-200 text-sm">⚠️ {error}</p>
+                                    </div>
+                                )}
+
+                                {lecturaResult && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="p-6 rounded-2xl space-y-4"
+                                        style={{
+                                            background: 'linear-gradient(135deg, rgba(245, 230, 255, 0.1), rgba(193, 212, 58, 0.1))',
+                                            border: '1px solid rgba(193, 212, 58, 0.3)'
+                                        }}
+                                    >
+                                        <h4 className="font-bold text-xl text-[#c1d43a]">Tu Lectura</h4>
+                                        
+                                        <div className="space-y-3 text-[#f5e6ff]/90 text-sm whitespace-pre-wrap">
+                                            {lecturaResult.mensaje_kunna}
+                                        </div>
+
+                                        {lecturaResult._warnings?.numerologia_fallback && (
+                                            <p className="text-xs text-yellow-300/60">
+                                                ⚠️ Numerología usando cálculo local (RapidAPI no disponible)
+                                            </p>
+                                        )}
+                                    </motion.div>
+                                )}
+                            </div>
+                        }
                     />
                 </div>
             </div>
