@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet';
 import { Sparkles, Moon, Wand2, Star, Download, PlayCircle, BookOpen, Droplets, Wind, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import TarotReading from '@/components/holistic-zone/TarotReading';
+import { getHolisticoReading, formatHolisticoReading } from '@/services/holisticoApi';
 
 
 const SectionItem = ({ title, onAction, actionType = 'download' }) => (
@@ -159,28 +160,32 @@ const HolisticZone = () => {
         setLecturaResult(null);
 
         try {
-            // URL absoluta para app nativa (Capacitor)
-            const API_URL = 'https://kunna.help/.netlify/functions/holistico-reading';
-            
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    fecha_nacimiento: '1990-05-15', // TODO: input del usuario
-                    name: 'Usuario KUNNA',
-                    pregunta: '¿Qué mensaje tiene el universo para mí hoy?'
-                })
+            // Usar helper nuevo (P0)
+            const reading = await getHolisticoReading({
+                fecha_nacimiento: '1990-05-15', // TODO: input del usuario
+                name: 'Usuario KUNNA',
+                pregunta: '¿Qué mensaje tiene el universo para mí hoy?'
             });
 
-            if (!response.ok) {
-                throw new Error(`Error ${response.status}: ${response.statusText}`);
+            // Formatear para UI
+            const formatted = formatHolisticoReading(reading);
+            
+            // Guardar lectura formateada
+            setLecturaResult(formatted);
+
+            // Log de warnings si existen
+            if (formatted.warnings.length > 0) {
+                console.warn('[Holística] Warnings:', formatted.warnings);
             }
 
-            const data = await response.json();
-            setLecturaResult(data);
+            console.log('[Holística] ✅ Lectura generada:', {
+                usandoALE: formatted.usandoALE,
+                source: reading.source
+            });
+
         } catch (err) {
-            console.error('Error obteniendo lectura:', err);
-            setError(err.message);
+            console.error('[Holística] Error:', err);
+            setError(err.message || 'No se pudo generar la lectura');
         } finally {
             setLoading(false);
         }
@@ -513,22 +518,89 @@ const HolisticZone = () => {
                                     <motion.div
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        className="p-6 rounded-2xl space-y-4"
+                                        className="p-6 rounded-2xl space-y-6"
                                         style={{
                                             background: 'linear-gradient(135deg, rgba(245, 230, 255, 0.1), rgba(193, 212, 58, 0.1))',
                                             border: '1px solid rgba(193, 212, 58, 0.3)'
                                         }}
                                     >
-                                        <h4 className="font-bold text-xl text-[#c1d43a]">Tu Lectura</h4>
-                                        
-                                        <div className="space-y-3 text-[#f5e6ff]/90 text-sm whitespace-pre-wrap">
-                                            {lecturaResult.mensaje_kunna}
+                                        {/* Título de la lectura */}
+                                        <div>
+                                            <h4 className="font-bold text-2xl text-[#c1d43a] mb-2">
+                                                {lecturaResult.interpretacion?.titulo || 'Tu Lectura Holística'}
+                                            </h4>
+                                            <p className="text-[#f5e6ff]/70 text-sm italic">
+                                                {lecturaResult.interpretacion?.resumen}
+                                            </p>
                                         </div>
 
-                                        {lecturaResult._warnings?.numerologia_fallback && (
-                                            <p className="text-xs text-yellow-300/60">
-                                                ⚠️ Numerología usando cálculo local (RapidAPI no disponible)
+                                        {/* Datos crudos (Tarot, Numerología, Astrología) */}
+                                        <div className="grid grid-cols-3 gap-3 p-4 rounded-xl bg-[#263152]/30">
+                                            <div className="text-center">
+                                                <p className="text-xs text-[#c1d43a] mb-1">Tarot</p>
+                                                <p className="text-sm font-semibold text-[#f5e6ff]">
+                                                    {lecturaResult.tarot?.nombre || 'N/A'}
+                                                </p>
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-xs text-[#c1d43a] mb-1">Numerología</p>
+                                                <p className="text-sm font-semibold text-[#f5e6ff]">
+                                                    {lecturaResult.numerologia?.numero || 'N/A'}
+                                                </p>
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-xs text-[#c1d43a] mb-1">Signo</p>
+                                                <p className="text-sm font-semibold text-[#f5e6ff]">
+                                                    {lecturaResult.astrologia?.signo || 'N/A'}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Lectura profunda */}
+                                        <div className="space-y-3 text-[#f5e6ff]/90 text-sm leading-relaxed">
+                                            {lecturaResult.interpretacion?.lectura}
+                                        </div>
+
+                                        {/* Consejos */}
+                                        {lecturaResult.interpretacion?.consejos?.length > 0 && (
+                                            <div className="space-y-2">
+                                                <p className="text-xs font-semibold text-[#c1d43a] uppercase tracking-wider">
+                                                    Consejos Prácticos
+                                                </p>
+                                                <ul className="space-y-2">
+                                                    {lecturaResult.interpretacion.consejos.map((consejo, idx) => (
+                                                        <li key={idx} className="flex items-start gap-2 text-sm text-[#f5e6ff]/80">
+                                                            <span className="text-[#c1d43a]">•</span>
+                                                            <span>{consejo}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+
+                                        {/* Afirmación */}
+                                        {lecturaResult.interpretacion?.afirmacion && (
+                                            <div className="p-4 rounded-xl bg-gradient-to-r from-[#c1d43a]/20 to-[#f5e6ff]/10 border border-[#c1d43a]/30">
+                                                <p className="text-center text-[#f5e6ff] font-serif italic">
+                                                    "{lecturaResult.interpretacion.afirmacion}"
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {/* Cierre KUNNA */}
+                                        {lecturaResult.interpretacion?.cierre && (
+                                            <p className="text-center text-sm text-[#f5e6ff]/60">
+                                                {lecturaResult.interpretacion.cierre}
                                             </p>
+                                        )}
+
+                                        {/* Warnings */}
+                                        {lecturaResult.warnings?.length > 0 && (
+                                            <div className="text-xs text-yellow-300/60 space-y-1">
+                                                {lecturaResult.warnings.map((w, idx) => (
+                                                    <p key={idx}>⚠️ {w.service}: {w.message}</p>
+                                                ))}
+                                            </div>
                                         )}
                                     </motion.div>
                                 )}
