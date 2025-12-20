@@ -17,10 +17,8 @@ export async function getHolisticoReading({ fecha_nacimiento, pregunta, name }) 
     }
 
     // Determinar URL según entorno
-    const isProduction = window.location.hostname === 'kunna.help';
-    const baseURL = isProduction 
-      ? 'https://kunna.help' 
-      : 'http://localhost:8888'; // netlify dev usa puerto 8888
+    // TEMPORAL: usar producción siempre (Netlify dev requiere puerto 8888)
+    const baseURL = 'https://kunna.help';
 
     const url = `${baseURL}/.netlify/functions/holistico-reading`;
 

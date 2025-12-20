@@ -37,7 +37,8 @@ const VideoIntro = () => {
         className="absolute inset-0 w-full h-full object-cover"
         onEnded={handleVideoEnd}
         playsInline
-        muted={false}
+        muted
+        autoPlay
       >
         <source src="/assets/videos/introKunna.mp4" type="video/mp4" />
         Tu navegador no soporta el video.

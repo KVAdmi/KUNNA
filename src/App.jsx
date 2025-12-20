@@ -35,6 +35,10 @@ import LearningModule from '@/pages/LearningModule.jsx';
 import PreventionModule from '@/pages/PreventionModule.jsx';
 import HolisticZone from '@/pages/HolisticZone.jsx';
 import ZinhaLibrary from '@/pages/ZinhaLibrary.jsx';
+import BibliotecaPublica from '@/pages/BibliotecaPublica.jsx';
+import MisLibros from '@/pages/MisLibros.jsx';
+import NuevoLibro from '@/pages/NuevoLibro.jsx';
+import LeerLibro from '@/pages/LeerLibro.jsx';
 import PodcastPage from '@/pages/PodcastPage.jsx';
 import ProfilePage from '@/pages/ProfilePage.jsx';
 import EmprendeEnCasa from '@/pages/EmprendeEnCasa.jsx';
@@ -82,7 +86,13 @@ const AppRoutes = () => (
     <Route path="/bienestar-completo" element={<Navigate to="/bienestar" replace />} />
     <Route path="/prevencion" element={<ProtectedRoute><PreventionModule /></ProtectedRoute>} />
     <Route path="/holistica" element={<ProtectedRoute><HolisticZone /></ProtectedRoute>} />
-    <Route path="/biblioteca" element={<ProtectedRoute><ZinhaLibrary /></ProtectedRoute>} />
+    
+    {/* Módulo Escribe tu Libro */}
+    <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPublica /></ProtectedRoute>} />
+    <Route path="/mis-libros" element={<ProtectedRoute><MisLibros /></ProtectedRoute>} />
+    <Route path="/nuevo-libro" element={<ProtectedRoute><NuevoLibro /></ProtectedRoute>} />
+    <Route path="/leer/:bookId" element={<ProtectedRoute><LeerLibro /></ProtectedRoute>} />
+    
     <Route path="/podcast" element={<ProtectedRoute><PodcastPage /></ProtectedRoute>} />
     <Route path="/diario-emocional" element={<ProtectedRoute><DiarioPersonal /></ProtectedRoute>} />
     <Route path="/emprende" element={<ProtectedRoute><EmprendeEnCasa /></ProtectedRoute>} />

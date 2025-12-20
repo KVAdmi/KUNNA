@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet';
-import { Sparkles, Moon, Wand2, Star, Download, PlayCircle, BookOpen, Droplets, Wind, Zap } from 'lucide-react';
+import { Sparkles, Moon, Wand2, Star, Download, PlayCircle, BookOpen, Droplets, Wind, Zap, Calendar, User, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import TarotReading from '@/components/holistic-zone/TarotReading';
 import { getHolisticoReading, formatHolisticoReading } from '@/services/holisticoApi';
+import { getNumerologiaCompleta } from '@/services/numerologiaService';
+import { getAstrologiaCompleta } from '@/services/astrologiaService';
 
 
 const SectionItem = ({ title, onAction, actionType = 'download' }) => (
@@ -142,10 +144,20 @@ const Accordion = ({ icon: Icon, title, content }) => {
 };
 
 const HolisticZone = () => {
+    // Estado para formulario
+    const [formData, setFormData] = useState({
+        nombre: '',
+        fechaNacimiento: '',
+        pregunta: ''
+    });
+    
     // Estado para lectura holística
     const [loading, setLoading] = useState(false);
     const [lecturaResult, setLecturaResult] = useState(null);
+    const [numerologiaData, setNumerologiaData] = useState(null);
+    const [astrologiaData, setAstrologiaData] = useState(null);
     const [error, setError] = useState(null);
+    const [mostrarFormulario, setMostrarFormulario] = useState(true);
   
     const handleAgendaClick = () => {
         const phoneNumber = "523310797565";
@@ -155,32 +167,62 @@ const HolisticZone = () => {
     };
 
     const handleLecturaHolistica = async () => {
+        // Validar formulario
+        if (!formData.nombre || !formData.fechaNacimiento) {
+            setError('Por favor completa tu nombre y fecha de nacimiento');
+            return;
+        }
+        
         setLoading(true);
         setError(null);
         setLecturaResult(null);
+        setNumerologiaData(null);
+        setAstrologiaData(null);
+        setMostrarFormulario(false);
 
         try {
-            // Usar helper nuevo (P0)
-            const reading = await getHolisticoReading({
-                fecha_nacimiento: '1990-05-15', // TODO: input del usuario
-                name: 'Usuario KUNNA',
-                pregunta: '¿Qué mensaje tiene el universo para mí hoy?'
+            console.log('[Holística] Iniciando lectura completa...');
+            
+            // 1. Lectura holística base (Tarot + interpretación AL-E)
+            const readingPromise = getHolisticoReading({
+                fecha_nacimiento: formData.fechaNacimiento,
+                name: formData.nombre,
+                pregunta: formData.pregunta || '¿Qué mensaje tiene el universo para mí hoy?'
             });
+
+            // 2. Numerología completa (16 endpoints)
+            const numerologiaPromise = getNumerologiaCompleta({
+                fecha: formData.fechaNacimiento,
+                nombre: formData.nombre
+            });
+            
+            // 3. Astrología completa (horóscopos + birth chart)
+            const astrologiaPromise = getAstrologiaCompleta(formData.fechaNacimiento);
+            
+            // Ejecutar todo en paralelo
+            const [reading, numerologia, astrologia] = await Promise.all([
+                readingPromise,
+                numerologiaPromise,
+                astrologiaPromise
+            ]);
 
             // Formatear para UI
             const formatted = formatHolisticoReading(reading);
             
-            // Guardar lectura formateada
+            // Guardar resultados
             setLecturaResult(formatted);
+            setNumerologiaData(numerologia);
+            setAstrologiaData(astrologia);
 
             // Log de warnings si existen
             if (formatted.warnings.length > 0) {
                 console.warn('[Holística] Warnings:', formatted.warnings);
             }
 
-            console.log('[Holística] ✅ Lectura generada:', {
+            console.log('[Holística] ✅ Lectura completa generada:', {
                 usandoALE: formatted.usandoALE,
-                source: reading.source
+                numerologiaOK: !!numerologia.lifePath,
+                astrologiaOK: !!astrologia.signo
             });
 
         } catch (err) {
@@ -236,14 +278,6 @@ const HolisticZone = () => {
     url: "https://wpsysctbaxbtzyebcjlb.supabase.co/storage/v1/object/public/Rituales/Limpia-Energetico-Sexualidad-y-Sensualidad.pdf"
   }
 ];
-
-    const meditations = [
-        { title: "Encuentro con tu Niña Interior" },
-        { title: "Meditación para Soltar el Miedo" },
-        { title: "Meditación de Aceptación y Perdón" },
-        { title: "Meditación para Cultivar Gratitud" },
-        { title: "Meditación para Conectar con tu Poder Interior" },
-    ];
 
     const contentVariants = {
         hidden: { opacity: 0 },
@@ -468,51 +502,108 @@ const HolisticZone = () => {
                             </motion.div>
                         }
                     />
-                    <Accordion
-                        icon={Wind}
-                        title="Meditaciones"
-                        content={(
-                            <motion.div variants={contentVariants} initial="hidden" animate="visible" className="space-y-3">
-                                {meditations.map((item, index) => <SectionItem key={index} title={item.title} onAction={() => window.open(item.url, "_blank")} actionType="play" />)}
-                            </motion.div>
-                        )}
-                    />
+                    
+                    {/* TAROT */}
                     <Accordion
                         icon={Wand2}
                         title="Tarot"
                         content={<TarotReading />}
                     />
+                    
+                    {/* LECTURA HOLÍSTICA (Numerología + Astrología + AL-E) */}
                     <Accordion
                         icon={Sparkles}
-                        title="Lectura Holística (Beta)"
+                        title="Lectura Holística Completa"
                         content={
-                            <div className="space-y-4">
-                                <p className="text-[#f5e6ff]/80 text-sm">
-                                    Obtén una lectura unificada de Tarot, Numerología y Astrología.
-                                </p>
+                            <div className="space-y-6">
+                                {/* FORMULARIO */}
+                                {mostrarFormulario && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="space-y-4 p-6 rounded-2xl bg-[#263152]/30"
+                                    >
+                                        <p className="text-[#f5e6ff]/80 text-sm mb-4">
+                                            Descubre tu mapa interior: Numerología completa (16 números), Astrología, Tarot y lectura personalizada con AL-E.
+                                        </p>
+                                        
+                                        {/* Nombre */}
+                                        <div>
+                                            <label className="block text-[#c1d43a] text-sm font-semibold mb-2">
+                                                <User className="w-4 h-4 inline mr-2" />
+                                                Tu Nombre Completo
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={formData.nombre}
+                                                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                                                placeholder="Ej: María González"
+                                                className="w-full px-4 py-3 rounded-xl bg-[#263152]/50 border border-[#f5e6ff]/20 text-[#f5e6ff] placeholder-[#f5e6ff]/40 focus:outline-none focus:border-[#c1d43a] transition-colors"
+                                            />
+                                        </div>
+                                        
+                                        {/* Fecha de Nacimiento */}
+                                        <div>
+                                            <label className="block text-[#c1d43a] text-sm font-semibold mb-2">
+                                                <Calendar className="w-4 h-4 inline mr-2" />
+                                                Fecha de Nacimiento
+                                            </label>
+                                            <input
+                                                type="date"
+                                                value={formData.fechaNacimiento}
+                                                onChange={(e) => setFormData({ ...formData, fechaNacimiento: e.target.value })}
+                                                className="w-full px-4 py-3 rounded-xl bg-[#263152]/50 border border-[#f5e6ff]/20 text-[#f5e6ff] focus:outline-none focus:border-[#c1d43a] transition-colors"
+                                            />
+                                        </div>
+                                        
+                                        {/* Pregunta (opcional) */}
+                                        <div>
+                                            <label className="block text-[#c1d43a] text-sm font-semibold mb-2">
+                                                <MessageCircle className="w-4 h-4 inline mr-2" />
+                                                ¿Qué quieres explorar hoy? (opcional)
+                                            </label>
+                                            <textarea
+                                                value={formData.pregunta}
+                                                onChange={(e) => setFormData({ ...formData, pregunta: e.target.value })}
+                                                placeholder="Ej: ¿Qué necesito soltar para avanzar?"
+                                                rows={3}
+                                                className="w-full px-4 py-3 rounded-xl bg-[#263152]/50 border border-[#f5e6ff]/20 text-[#f5e6ff] placeholder-[#f5e6ff]/40 focus:outline-none focus:border-[#c1d43a] transition-colors resize-none"
+                                            />
+                                        </div>
+                                        
+                                        {error && (
+                                            <p className="text-red-400 text-sm">⚠️ {error}</p>
+                                        )}
+                                    </motion.div>
+                                )}
                                 
+                                {/* BOTÓN */}
                                 <motion.button
-                                    onClick={handleLecturaHolistica}
-                                    disabled={loading}
-                                    className="w-full px-6 py-3 font-bold rounded-xl text-lg shadow-xl transform transition-all duration-300"
+                                    onClick={() => {
+                                        if (!mostrarFormulario) {
+                                            // Reset para nueva lectura
+                                            setMostrarFormulario(true);
+                                            setLecturaResult(null);
+                                            setNumerologiaData(null);
+                                            setAstrologiaData(null);
+                                        } else {
+                                            handleLecturaHolistica();
+                                        }
+                                    }}
+                                    disabled={loading || (mostrarFormulario && (!formData.nombre || !formData.fechaNacimiento))}
+                                    className="w-full px-6 py-3 font-bold rounded-xl text-lg shadow-xl transform transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                                     style={{
                                         background: loading 
                                             ? 'linear-gradient(135deg, rgba(193, 212, 58, 0.3), rgba(245, 230, 255, 0.3))'
                                             : 'linear-gradient(135deg, #c1d43a, #f5e6ff)',
-                                        color: '#263152',
-                                        opacity: loading ? 0.6 : 1
+                                        color: '#263152'
                                     }}
-                                    whileHover={!loading ? { scale: 1.02 } : {}}
+                                    whileHover={!loading && (mostrarFormulario ? (formData.nombre && formData.fechaNacimiento) : true) ? { scale: 1.02 } : {}}
                                     whileTap={!loading ? { scale: 0.98 } : {}}
                                 >
-                                    {loading ? '🔮 Consultando el cosmos...' : '✨ Obtener lectura'}
+                                    {loading ? '🔮 Consultando el cosmos...' : mostrarFormulario ? '✨ Obtener Lectura Completa' : '🔄 Nueva Lectura'}
                                 </motion.button>
 
-                                {error && (
-                                    <div className="p-4 rounded-lg bg-red-500/20 border border-red-500/40">
-                                        <p className="text-red-200 text-sm">⚠️ {error}</p>
-                                    </div>
-                                )}
 
                                 {lecturaResult && (
                                     <motion.div
@@ -600,6 +691,121 @@ const HolisticZone = () => {
                                                 {lecturaResult.warnings.map((w, idx) => (
                                                     <p key={idx}>⚠️ {w.service}: {w.message}</p>
                                                 ))}
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                )}
+                                
+                                {/* NUMEROLOGÍA COMPLETA (16 NÚMEROS) */}
+                                {numerologiaData && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="p-6 rounded-2xl space-y-4 bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/30"
+                                    >
+                                        <h4 className="font-bold text-xl text-[#c1d43a] mb-4">📊 Tu Mapa Numerológico Completo</h4>
+                                        
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {/* Life Path */}
+                                            {numerologiaData.lifePath && (
+                                                <div className="p-4 rounded-xl bg-[#263152]/40">
+                                                    <p className="text-xs text-[#c1d43a] font-semibold mb-1">CAMINO DE VIDA</p>
+                                                    <p className="text-2xl font-bold text-[#f5e6ff] mb-2">{numerologiaData.lifePath.life_path_number}</p>
+                                                    <p className="text-sm text-[#f5e6ff]/80">{numerologiaData.lifePath.summary}</p>
+                                                </div>
+                                            )}
+                                            
+                                            {/* Soul Urge */}
+                                            {numerologiaData.soulUrge && (
+                                                <div className="p-4 rounded-xl bg-[#263152]/40">
+                                                    <p className="text-xs text-[#c1d43a] font-semibold mb-1">ALMA</p>
+                                                    <p className="text-2xl font-bold text-[#f5e6ff] mb-2">{numerologiaData.soulUrge.soul_urge_number}</p>
+                                                    <p className="text-sm text-[#f5e6ff]/80">{numerologiaData.soulUrge.summary}</p>
+                                                </div>
+                                            )}
+                                            
+                                            {/* Expression */}
+                                            {numerologiaData.expression && (
+                                                <div className="p-4 rounded-xl bg-[#263152]/40">
+                                                    <p className="text-xs text-[#c1d43a] font-semibold mb-1">EXPRESIÓN/DESTINO</p>
+                                                    <p className="text-2xl font-bold text-[#f5e6ff] mb-2">{numerologiaData.expression.expression_number}</p>
+                                                    <p className="text-sm text-[#f5e6ff]/80">{numerologiaData.expression.summary}</p>
+                                                </div>
+                                            )}
+                                            
+                                            {/* Personality */}
+                                            {numerologiaData.personality && (
+                                                <div className="p-4 rounded-xl bg-[#263152]/40">
+                                                    <p className="text-xs text-[#c1d43a] font-semibold mb-1">PERSONALIDAD</p>
+                                                    <p className="text-2xl font-bold text-[#f5e6ff] mb-2">{numerologiaData.personality.personality_number}</p>
+                                                    <p className="text-sm text-[#f5e6ff]/80">{numerologiaData.personality.summary}</p>
+                                                </div>
+                                            )}
+                                            
+                                            {/* Personal Year */}
+                                            {numerologiaData.personalYear && (
+                                                <div className="p-4 rounded-xl bg-[#263152]/40">
+                                                    <p className="text-xs text-[#c1d43a] font-semibold mb-1">AÑO PERSONAL</p>
+                                                    <p className="text-2xl font-bold text-[#f5e6ff] mb-2">{numerologiaData.personalYear.personal_year_number}</p>
+                                                    <p className="text-sm text-[#f5e6ff]/80">{numerologiaData.personalYear.summary}</p>
+                                                </div>
+                                            )}
+                                            
+                                            {/* Lucky Numbers */}
+                                            {numerologiaData.luckyNumbers && numerologiaData.luckyNumbers.lucky_numbers && (
+                                                <div className="p-4 rounded-xl bg-[#263152]/40">
+                                                    <p className="text-xs text-[#c1d43a] font-semibold mb-1">NÚMEROS DE LA SUERTE</p>
+                                                    <p className="text-2xl font-bold text-[#f5e6ff]">
+                                                        {numerologiaData.luckyNumbers.lucky_numbers.join(', ')}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                        
+                                        {/* Botón para ver más detalles */}
+                                        <button className="w-full py-2 rounded-lg bg-[#c1d43a]/20 text-[#c1d43a] text-sm hover:bg-[#c1d43a]/30 transition-colors">
+                                            Ver todos los 16 números →
+                                        </button>
+                                    </motion.div>
+                                )}
+                                
+                                {/* ASTROLOGÍA COMPLETA */}
+                                {astrologiaData && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="p-6 rounded-2xl space-y-4 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border border-blue-500/30"
+                                    >
+                                        <h4 className="font-bold text-xl text-[#c1d43a] mb-4">⭐ Tu Mapa Astrológico</h4>
+                                        
+                                        {/* Signo y Elemento */}
+                                        <div className="p-4 rounded-xl bg-[#263152]/40">
+                                            <p className="text-lg font-semibold text-[#f5e6ff] mb-2">
+                                                {astrologiaData.signo?.toUpperCase()} • Elemento {astrologiaData.elemento}
+                                            </p>
+                                        </div>
+                                        
+                                        {/* Horóscopo Diario */}
+                                        {astrologiaData.horoscopo?.diario && (
+                                            <div className="p-4 rounded-xl bg-[#263152]/40">
+                                                <p className="text-xs text-[#c1d43a] font-semibold mb-2">🌅 HORÓSCOPO DE HOY</p>
+                                                <p className="text-sm text-[#f5e6ff]/90">{astrologiaData.horoscopo.diario.horoscope || astrologiaData.horoscopo.diario.description}</p>
+                                            </div>
+                                        )}
+                                        
+                                        {/* Horóscopo Semanal */}
+                                        {astrologiaData.horoscopo?.semanal && (
+                                            <div className="p-4 rounded-xl bg-[#263152]/40">
+                                                <p className="text-xs text-[#c1d43a] font-semibold mb-2">📅 SEMANA</p>
+                                                <p className="text-sm text-[#f5e6ff]/90">{astrologiaData.horoscopo.semanal.horoscope || astrologiaData.horoscopo.semanal.description}</p>
+                                            </div>
+                                        )}
+                                        
+                                        {/* Horóscopo Mensual */}
+                                        {astrologiaData.horoscopo?.mensual && (
+                                            <div className="p-4 rounded-xl bg-[#263152]/40">
+                                                <p className="text-xs text-[#c1d43a] font-semibold mb-2">🗓️ MES</p>
+                                                <p className="text-sm text-[#f5e6ff]/90">{astrologiaData.horoscopo.mensual.horoscope || astrologiaData.horoscopo.mensual.description}</p>
                                             </div>
                                         )}
                                     </motion.div>
