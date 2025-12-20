@@ -1,16 +1,9 @@
-// Netlify Function - Zona Holística KUNNA
-// Backend-only: Consume APIs externas REALES (Tarot + RapidAPI)
+// Netlify Function - Zona Holística KUNNA P0 FIX
+// Backend-only: RapidAPI REAL + Tarot traducido + AL-E interpretación
 
 const fetch = require('node-fetch');
 
-// Plantillas de mensajes Kunna SOLO como fallback
-const MENSAJES_FALLBACK = {
-  tarot: 'Las cartas te invitan a confiar en tu proceso.',
-  numerologia: 'Tu número te recuerda tu propósito único.',
-  astrologia: 'Las estrellas te acompañan en tu camino.'
-};
-
-// Headers CORS para permitir requests desde localhost y producción
+// Headers CORS
 const headers = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
@@ -18,18 +11,172 @@ const headers = {
   'Content-Type': 'application/json'
 };
 
-// Función principal de la Netlify Function
-exports.handler = async (event, context) => {
-  // Manejar preflight CORS
-  if (event.httpMethod === 'OPTIONS') {
-    return {
-      statusCode: 200,
-      headers,
-      body: ''
-    };
-  }
+// Diccionario Tarot básico (español) - usado si AL-E está OFF
+const TAROT_ES = {
+  'The Fool': { nombre: 'El Loco', keywords: ['nuevos comienzos', 'espontaneidad', 'fe'] },
+  'The Magician': { nombre: 'El Mago', keywords: ['manifestación', 'poder', 'acción'] },
+  'The High Priestess': { nombre: 'La Sacerdotisa', keywords: ['intuición', 'misterio', 'sabiduría'] },
+  'The Empress': { nombre: 'La Emperatriz', keywords: ['abundancia', 'fertilidad', 'naturaleza'] },
+  'The Emperor': { nombre: 'El Emperador', keywords: ['autoridad', 'estructura', 'control'] },
+  'The Hierophant': { nombre: 'El Sumo Sacerdote', keywords: ['tradición', 'conformidad', 'moral'] },
+  'The Lovers': { nombre: 'Los Enamorados', keywords: ['amor', 'armonía', 'relaciones'] },
+  'The Chariot': { nombre: 'El Carro', keywords: ['voluntad', 'determinación', 'victoria'] },
+  'Strength': { nombre: 'La Fuerza', keywords: ['coraje', 'paciencia', 'compasión'] },
+  'The Hermit': { nombre: 'El Ermitaño', keywords: ['introspección', 'búsqueda', 'soledad'] },
+  'Wheel of Fortune': { nombre: 'La Rueda de la Fortuna', keywords: ['ciclos', 'destino', 'cambio'] },
+  'Justice': { nombre: 'La Justicia', keywords: ['verdad', 'equidad', 'ley'] },
+  'The Hanged Man': { nombre: 'El Colgado', keywords: ['sacrificio', 'perspectiva', 'pausa'] },
+  'Death': { nombre: 'La Muerte', keywords: ['transformación', 'final', 'renacimiento'] },
+  'Temperance': { nombre: 'La Templanza', keywords: ['balance', 'moderación', 'paciencia'] },
+  'The Devil': { nombre: 'El Diablo', keywords: ['adicción', 'apego', 'limitación'] },
+  'The Tower': { nombre: 'La Torre', keywords: ['revelación', 'cambio súbito', 'liberación'] },
+  'The Star': { nombre: 'La Estrella', keywords: ['esperanza', 'inspiración', 'serenidad'] },
+  'The Moon': { nombre: 'La Luna', keywords: ['ilusión', 'intuición', 'subconsciente'] },
+  'The Sun': { nombre: 'El Sol', keywords: ['alegría', 'éxito', 'vitalidad'] },
+  'Judgement': { nombre: 'El Juicio', keywords: ['evaluación', 'renacimiento', 'perdón'] },
+  'The World': { nombre: 'El Mundo', keywords: ['completitud', 'logro', 'viaje'] }
+};
 
-  // Solo permitir POST
+// Traducir carta de tarot
+function traducirTarot(cartaEN) {
+  const nombre = cartaEN.name || '';
+  const traduccion = TAROT_ES[nombre] || { nombre, keywords: ['cambio', 'reflexión'] };
+  
+  return {
+    nombre_original: nombre,
+    nombre: traduccion.nombre,
+    keywords: traduccion.keywords,
+    significado_original: cartaEN.meaning_up || '',
+    imagen: cartaEN.img || null
+  };
+}
+
+// Cálculo numerología local (fallback)
+function calcularNumerologiaLocal(fecha) {
+  const [year, month, day] = fecha.split('-');
+  const suma = Array.from(year + month + day).reduce((acc, d) => acc + parseInt(d), 0);
+  let numeroVida = suma;
+  
+  while (numeroVida > 9 && numeroVida !== 11 && numeroVida !== 22 && numeroVida !== 33) {
+    numeroVida = Array.from(numeroVida.toString()).reduce((acc, d) => acc + parseInt(d), 0);
+  }
+  
+  return { numero_vida: numeroVida, metodo: 'local' };
+}
+
+// Calcular signo zodiacal
+function calcularSigno(fecha) {
+  const [year, month, day] = fecha.split('-');
+  const m = parseInt(month);
+  const d = parseInt(day);
+  
+  if ((m === 3 && d >= 21) || (m === 4 && d <= 19)) return { signo: 'Aries', elemento: 'Fuego' };
+  if ((m === 4 && d >= 20) || (m === 5 && d <= 20)) return { signo: 'Tauro', elemento: 'Tierra' };
+  if ((m === 5 && d >= 21) || (m === 6 && d <= 20)) return { signo: 'Géminis', elemento: 'Aire' };
+  if ((m === 6 && d >= 21) || (m === 7 && d <= 22)) return { signo: 'Cáncer', elemento: 'Agua' };
+  if ((m === 7 && d >= 23) || (m === 8 && d <= 22)) return { signo: 'Leo', elemento: 'Fuego' };
+  if ((m === 8 && d >= 23) || (m === 9 && d <= 22)) return { signo: 'Virgo', elemento: 'Tierra' };
+  if ((m === 9 && d >= 23) || (m === 10 && d <= 22)) return { signo: 'Libra', elemento: 'Aire' };
+  if ((m === 10 && d >= 23) || (m === 11 && d <= 21)) return { signo: 'Escorpio', elemento: 'Agua' };
+  if ((m === 11 && d >= 22) || (m === 12 && d <= 21)) return { signo: 'Sagitario', elemento: 'Fuego' };
+  if ((m === 12 && d >= 22) || (m === 1 && d <= 19)) return { signo: 'Capricornio', elemento: 'Tierra' };
+  if ((m === 1 && d >= 20) || (m === 2 && d <= 18)) return { signo: 'Acuario', elemento: 'Aire' };
+  return { signo: 'Piscis', elemento: 'Agua' };
+}
+
+// Interpretación con AL-E (OpenAI)
+async function interpretarConALE(tarot, numerologia, astrologia, pregunta) {
+  const OPENAI_KEY = process.env.OPENAI_API_KEY;
+  const ALE_ENABLED = process.env.ALE_HOLISTICO_ENABLED === '1';
+  const ALE_MODEL = process.env.ALE_HOLISTICO_MODEL || 'gpt-4o-mini';
+  
+  if (!ALE_ENABLED || !OPENAI_KEY) {
+    console.log('[holistico] AL-E deshabilitado, usando interpretación básica');
+    return generarInterpretacionBasica(tarot, numerologia, astrologia, pregunta);
+  }
+  
+  try {
+    const prompt = `Eres AL-E, asistente holístico de KUNNA. Genera una lectura contenedora (nunca fatalista) integrando:
+
+TAROT: ${tarot.nombre} (${tarot.keywords.join(', ')})
+NUMEROLOGÍA: Número de vida ${numerologia.numero_vida || numerologia.life_path_number || 'N/A'}
+ASTROLOGÍA: ${astrologia.signo} (${astrologia.elemento})
+PREGUNTA: ${pregunta || 'Guía general'}
+
+Devuelve JSON:
+{
+  "titulo": "Título de 4-6 palabras",
+  "resumen": "1 línea síntesis",
+  "lectura": "3-5 párrafos profundos, tono cálido",
+  "consejos": ["consejo 1", "consejo 2", "consejo 3"],
+  "afirmacion": "Afirmación positiva 1 línea",
+  "cierre": "Cierre KUNNA contenedor"
+}`;
+
+    console.log('[holistico] Consultando AL-E...');
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_KEY}`
+      },
+      body: JSON.stringify({
+        model: ALE_MODEL,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.8,
+        max_tokens: 800
+      }),
+      timeout: 10000
+    });
+    
+    if (!response.ok) {
+      throw new Error(`OpenAI status ${response.status}`);
+    }
+    
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+    
+    if (!content) throw new Error('Respuesta vacía de AL-E');
+    
+    // Extraer JSON del contenido
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No se encontró JSON en respuesta AL-E');
+    
+    const interpretacion = JSON.parse(jsonMatch[0]);
+    console.log('[holistico] ✅ Interpretación AL-E generada');
+    
+    return interpretacion;
+    
+  } catch (error) {
+    console.error('[holistico] Error en AL-E:', error.message);
+    return generarInterpretacionBasica(tarot, numerologia, astrologia, pregunta);
+  }
+}
+
+// Interpretación básica (fallback sin AL-E)
+function generarInterpretacionBasica(tarot, numerologia, astrologia, pregunta) {
+  return {
+    titulo: `${tarot.nombre} te acompaña hoy`,
+    resumen: `Las energías de ${tarot.keywords[0]} se activan en tu camino.`,
+    lectura: `La carta ${tarot.nombre} habla de ${tarot.keywords.join(', ')}. Tu número de vida ${numerologia.numero_vida || numerologia.life_path_number || ''} refuerza tu propósito único. Como ${astrologia.signo}, tu elemento ${astrologia.elemento} te invita a fluir con estas energías. ${pregunta ? `Sobre tu pregunta, las señales te invitan a confiar en el proceso.` : 'Confía en las señales que recibes.'}`,
+    consejos: [
+      'Mantén tu atención en el presente',
+      'Confía en tu intuición',
+      'Permítete ser guiada'
+    ],
+    afirmacion: 'Estoy en el lugar correcto, en el momento perfecto',
+    cierre: 'Estás acompañada en cada paso. KUNNA 💚'
+  };
+}
+
+// HANDLER PRINCIPAL
+exports.handler = async (event, context) => {
+  // CORS preflight
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers, body: '' };
+  }
+  
+  // Solo POST
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -37,67 +184,68 @@ exports.handler = async (event, context) => {
       body: JSON.stringify({ error: 'Method not allowed' })
     };
   }
-
+  
   try {
     const body = JSON.parse(event.body || '{}');
     const { fecha_nacimiento, pregunta, name } = body;
-
-    // Validar entrada
+    
+    // Validación
     if (!fecha_nacimiento) {
       return {
         statusCode: 400,
         headers,
         body: JSON.stringify({ 
-          error: 'fecha_nacimiento es requerida',
-          ejemplo: '1990-05-15'
+          ok: false,
+          error: { code: 'INVALID_INPUT', message: 'fecha_nacimiento requerida (formato: YYYY-MM-DD)' }
         })
       };
     }
-
-    console.log('🔮 Generando lectura holística REAL para:', fecha_nacimiento);
-
-    // Leer variables de entorno (backend-only)
+    
+    console.log('[holistico] Nueva lectura para:', fecha_nacimiento);
+    
+    const warnings = [];
+    
+    // ENV VARS
     const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY;
     const RAPIDAPI_HOST = process.env.RAPIDAPI_HOST || 'the-numerology-api.p.rapidapi.com';
-
-    let hasRapidAPI = !!RAPIDAPI_KEY;
-    console.log('🔑 RapidAPI disponible:', hasRapidAPI);
-
-    // 1. TAROT - API pública directa
+    const TAROT_API_URL = process.env.TAROT_API_URL || 'https://tarotapi.dev/api/v1';
+    const ALLOW_FALLBACK = process.env.ALLOW_FALLBACK_LOCAL === '1';
+    
+    // ========== 1. TAROT ==========
     let tarotData = null;
-    let tarotError = null;
     try {
-      console.log('🔮 Consultando tarotapi.dev...');
-      const tarotResponse = await fetch('https://tarotapi.dev/api/v1/cards/random?n=1', {
+      console.log('[holistico] Consultando Tarot API...');
+      const tarotRes = await fetch(`${TAROT_API_URL}/cards/random?n=1`, {
         headers: { 'Accept': 'application/json' },
         timeout: 5000
       });
       
-      if (!tarotResponse.ok) {
-        throw new Error(`Tarot API status: ${tarotResponse.status}`);
+      if (!tarotRes.ok) {
+        throw new Error(`Tarot API status ${tarotRes.status}`);
       }
       
-      const tarotJson = await tarotResponse.json();
-      tarotData = tarotJson.cards?.[0] || null;
-      console.log('✅ Carta obtenida:', tarotData?.name);
+      const tarotJson = await tarotRes.json();
+      const carta = tarotJson.cards?.[0];
+      
+      if (!carta) throw new Error('Sin carta en respuesta');
+      
+      tarotData = traducirTarot(carta);
+      console.log('[holistico] ✅ Tarot:', tarotData.nombre);
+      
     } catch (error) {
-      console.error('⚠️ Error en Tarot API:', error.message);
-      tarotError = error.message;
-      tarotData = { 
-        name: 'The Fool', 
-        meaning_up: 'Nuevo comienzo', 
-        desc: 'Inicio de un viaje',
-        name_short: 'ar00'
-      };
+      console.error('[holistico] ❌ Tarot API falló:', error.message);
+      warnings.push({ service: 'tarot', message: 'API no disponible, usando carta de respaldo' });
+      tarotData = traducirTarot({ name: 'The Star', meaning_up: 'Hope and inspiration' });
     }
-
-    // 2. NUMEROLOGÍA - RapidAPI REAL
+    
+    // ========== 2. NUMEROLOGÍA (RapidAPI) ==========
     let numerologiaData = null;
-    let numeroError = null;
-    try {
-      if (hasRapidAPI) {
-        console.log('🔢 Consultando RapidAPI (numerología)...');
-        const numeroResponse = await fetch('https://the-numerology-api.p.rapidapi.com/lucky_numbers/post', {
+    let numerologiaSource = 'none';
+    
+    if (RAPIDAPI_KEY) {
+      try {
+        console.log('[holistico] Consultando RapidAPI (numerología)...');
+        const numeroRes = await fetch(`https://${RAPIDAPI_HOST}/lucky_numbers/post`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -110,136 +258,101 @@ exports.handler = async (event, context) => {
           }),
           timeout: 5000
         });
-
-        if (!numeroResponse.ok) {
-          throw new Error(`RapidAPI Numerología status: ${numeroResponse.status}`);
+        
+        console.log('[holistico] rapidapi status', numeroRes.status);
+        
+        if (numeroRes.status === 401 || numeroRes.status === 403) {
+          throw new Error('RAPIDAPI_AUTH_FAILED');
         }
-
-        const numeroJson = await numeroResponse.json();
+        
+        if (!numeroRes.ok) {
+          throw new Error(`RapidAPI status ${numeroRes.status}`);
+        }
+        
+        const numeroJson = await numeroRes.json();
         numerologiaData = {
           lucky_numbers: numeroJson.lucky_numbers || [],
-          life_path_number: numeroJson.life_path_number || null,
-          significado: `Tus números de la suerte son: ${numeroJson.lucky_numbers?.join(', ') || 'N/A'}`
+          life_path_number: numeroJson.life_path_number || null
         };
-        console.log('✅ Numerología obtenida:', numerologiaData);
+        numerologiaSource = 'rapidapi';
+        console.log('[holistico] ✅ Numerología RapidAPI');
+        
+      } catch (error) {
+        console.error('[holistico] ❌ RapidAPI falló:', error.message);
+        
+        if (error.message === 'RAPIDAPI_AUTH_FAILED') {
+          warnings.push({ 
+            service: 'numerologia', 
+            message: 'RapidAPI autenticación falló - verifica RAPIDAPI_KEY',
+            code: 'RAPIDAPI_DOWN'
+          });
+        } else {
+          warnings.push({ service: 'numerologia', message: `RapidAPI error: ${error.message}` });
+        }
+        
+        if (ALLOW_FALLBACK) {
+          numerologiaData = calcularNumerologiaLocal(fecha_nacimiento);
+          numerologiaSource = 'local';
+          console.log('[holistico] ⚠️ Usando numerología local (fallback)');
+        } else {
+          numerologiaData = { numero_vida: null };
+          numerologiaSource = 'none';
+        }
+      }
+    } else {
+      console.log('[holistico] ⚠️ RAPIDAPI_KEY no configurada');
+      warnings.push({ service: 'numerologia', message: 'RapidAPI no configurado' });
+      
+      if (ALLOW_FALLBACK) {
+        numerologiaData = calcularNumerologiaLocal(fecha_nacimiento);
+        numerologiaSource = 'local';
       } else {
-        throw new Error('RAPIDAPI_KEY no configurada');
+        numerologiaData = { numero_vida: null };
+        numerologiaSource = 'none';
       }
-    } catch (error) {
-      console.error('⚠️ Error en RapidAPI Numerología:', error.message);
-      numeroError = error.message;
-      // Fallback local
-      const [year, month, day] = fecha_nacimiento.split('-');
-      const suma = Array.from(year + month + day).reduce((acc, digit) => acc + parseInt(digit), 0);
-      const numeroVida = suma > 9 ? Array.from(suma.toString()).reduce((acc, digit) => acc + parseInt(digit), 0) : suma;
-      
-      numerologiaData = {
-        numero_vida: numeroVida,
-        significado: `Número de vida ${numeroVida} (fallback local)`,
-        _fallback: true
-      };
     }
-
-    // 3. ASTROLOGÍA - Local como fallback (RapidAPI puede no tener astro)
-    let astrologiaData = null;
-    let astroError = null;
-    try {
-      const [year, month, day] = fecha_nacimiento.split('-');
-      const monthNum = parseInt(month);
-      const dayNum = parseInt(day);
-      
-      let signo = 'Aries';
-      if ((monthNum === 3 && dayNum >= 21) || (monthNum === 4 && dayNum <= 19)) signo = 'Aries';
-      else if ((monthNum === 4 && dayNum >= 20) || (monthNum === 5 && dayNum <= 20)) signo = 'Tauro';
-      else if ((monthNum === 5 && dayNum >= 21) || (monthNum === 6 && dayNum <= 20)) signo = 'Géminis';
-      else if ((monthNum === 6 && dayNum >= 21) || (monthNum === 7 && dayNum <= 22)) signo = 'Cáncer';
-      else if ((monthNum === 7 && dayNum >= 23) || (monthNum === 8 && dayNum <= 22)) signo = 'Leo';
-      else if ((monthNum === 8 && dayNum >= 23) || (monthNum === 9 && dayNum <= 22)) signo = 'Virgo';
-      else if ((monthNum === 9 && dayNum >= 23) || (monthNum === 10 && dayNum <= 22)) signo = 'Libra';
-      else if ((monthNum === 10 && dayNum >= 23) || (monthNum === 11 && dayNum <= 21)) signo = 'Escorpio';
-      else if ((monthNum === 11 && dayNum >= 22) || (monthNum === 12 && dayNum <= 21)) signo = 'Sagitario';
-      else if ((monthNum === 12 && dayNum >= 22) || (monthNum === 1 && dayNum <= 19)) signo = 'Capricornio';
-      else if ((monthNum === 1 && dayNum >= 20) || (monthNum === 2 && dayNum <= 18)) signo = 'Acuario';
-      else signo = 'Piscis';
-      
-      astrologiaData = {
-        signo: signo,
-        elemento: ['Aries', 'Leo', 'Sagitario'].includes(signo) ? 'Fuego' :
-                  ['Tauro', 'Virgo', 'Capricornio'].includes(signo) ? 'Tierra' :
-                  ['Géminis', 'Libra', 'Acuario'].includes(signo) ? 'Aire' : 'Agua',
-        _fallback: true
-      };
-      console.log('✅ Astrología (local):', astrologiaData.signo);
-    } catch (error) {
-      console.error('⚠️ Error en Astrología:', error.message);
-      astroError = error.message;
-      astrologiaData = { signo: 'Desconocido', elemento: 'Desconocido' };
-    }
-
-    // 4. MENSAJE KUNNA - Unificado sin emojis obligatorios
-    const mensajeKunna = `
-Lectura Holística KUNNA
-
-Tarot: ${tarotData?.name || 'Carta no disponible'}
-${tarotData?.meaning_up || MENSAJES_FALLBACK.tarot}
-
-Numerología: ${numerologiaData?._fallback ? 'Número de vida ' + numerologiaData.numero_vida : 'Números de la suerte: ' + (numerologiaData?.lucky_numbers?.join(', ') || 'N/A')}
-${numerologiaData?.significado || MENSAJES_FALLBACK.numerologia}
-
-Astrología: ${astrologiaData?.signo} (${astrologiaData?.elemento})
-Tu energía ${astrologiaData?.elemento === 'Fuego' ? 'es pasión y acción' : 
-              astrologiaData?.elemento === 'Tierra' ? 'es estabilidad y materialización' :
-              astrologiaData?.elemento === 'Aire' ? 'es comunicación y pensamiento' :
-              'es emoción e intuición'}.
-
-${pregunta ? `En relación a tu pregunta: "${pregunta}", ` : ''}Las energías de hoy te invitan a integrar estos mensajes. Confía en tu proceso y en las señales que recibes.
-
-Estás acompañada.
-    `.trim();
-
-    // Respuesta unificada
+    
+    // ========== 3. ASTROLOGÍA (local) ==========
+    const astrologiaData = calcularSigno(fecha_nacimiento);
+    console.log('[holistico] ✅ Astrología:', astrologiaData.signo);
+    
+    // ========== 4. INTERPRETACIÓN AL-E ==========
+    const interpretacion = await interpretarConALE(tarotData, numerologiaData, astrologiaData, pregunta);
+    
+    // ========== RESPUESTA FINAL ==========
     const response = {
-      success: true,
-      fecha_consulta: new Date().toISOString(),
-      tarot: {
-        carta: tarotData?.name || 'N/A',
-        significado: tarotData?.meaning_up || MENSAJES_FALLBACK.tarot,
-        descripcion: tarotData?.desc || '',
-        imagen: tarotData?.img || null,
-        _error: tarotError || null
+      ok: true,
+      source: {
+        tarot: 'tarotapi.dev',
+        numerologia: numerologiaSource,
+        astrologia: 'local',
+        ale: interpretacion.titulo !== `${tarotData.nombre} te acompaña hoy` // detecta si es AL-E o básico
       },
-      numerologia: {
-        ...numerologiaData,
-        _error: numeroError || null
-      },
-      astrologia: {
-        ...astrologiaData,
-        _error: astroError || null
-      },
-      mensaje_kunna: mensajeKunna,
-      _warnings: {
-        rapidapi_used: hasRapidAPI,
-        tarot_failed: !!tarotError,
-        numerologia_fallback: numerologiaData?._fallback || false,
-        astrologia_fallback: astrologiaData?._fallback || false
-      }
+      tarot: tarotData,
+      numerologia: numerologiaData,
+      astrologia: astrologiaData,
+      interpretacion,
+      warnings: warnings.length > 0 ? warnings : undefined,
+      timestamp: new Date().toISOString()
     };
-
+    
     return {
       statusCode: 200,
       headers,
       body: JSON.stringify(response)
     };
-
+    
   } catch (error) {
-    console.error('❌ Error crítico en lectura holística:', error);
+    console.error('[holistico] ❌ Error crítico:', error.message);
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ 
-        success: false,
-        reason: 'Error generando lectura',
-        details: error.message 
+      body: JSON.stringify({
+        ok: false,
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'Error generando lectura holística'
+        }
       })
     };
   }
