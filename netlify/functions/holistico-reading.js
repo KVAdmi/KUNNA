@@ -10,12 +10,30 @@ const MENSAJES_FALLBACK = {
   astrologia: 'Las estrellas te acompañan en tu camino.'
 };
 
+// Headers CORS para permitir requests desde localhost y producción
+const headers = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Content-Type': 'application/json'
+};
+
 // Función principal de la Netlify Function
 exports.handler = async (event, context) => {
+  // Manejar preflight CORS
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers,
+      body: ''
+    };
+  }
+
   // Solo permitir POST
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
+      headers,
       body: JSON.stringify({ error: 'Method not allowed' })
     };
   }
@@ -28,6 +46,7 @@ exports.handler = async (event, context) => {
     if (!fecha_nacimiento) {
       return {
         statusCode: 400,
+        headers,
         body: JSON.stringify({ 
           error: 'fecha_nacimiento es requerida',
           ejemplo: '1990-05-15'
@@ -208,11 +227,7 @@ Estás acompañada.
 
     return {
       statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type'
-      },
+      headers,
       body: JSON.stringify(response)
     };
 
@@ -220,6 +235,7 @@ Estás acompañada.
     console.error('❌ Error crítico en lectura holística:', error);
     return {
       statusCode: 500,
+      headers,
       body: JSON.stringify({ 
         success: false,
         reason: 'Error generando lectura',
