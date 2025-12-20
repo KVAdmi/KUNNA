@@ -84,13 +84,12 @@ function calcularSigno(fecha) {
   return { signo: 'Piscis', elemento: 'Agua' };
 }
 
-// Interpretación con AL-E (OpenAI)
+// Interpretación con AL-E (Backend KUNNA)
 async function interpretarConALE(tarot, numerologia, astrologia, pregunta) {
-  const OPENAI_KEY = process.env.OPENAI_API_KEY;
+  const ALE_CORE_URL = process.env.ALE_CORE_URL || 'https://api.al-entity.com/api/ai/chat';
   const ALE_ENABLED = process.env.ALE_HOLISTICO_ENABLED === '1';
-  const ALE_MODEL = process.env.ALE_HOLISTICO_MODEL || 'gpt-4o-mini';
   
-  if (!ALE_ENABLED || !OPENAI_KEY) {
+  if (!ALE_ENABLED) {
     console.log('[holistico] AL-E deshabilitado, usando interpretación básica');
     return generarInterpretacionBasica(tarot, numerologia, astrologia, pregunta);
   }
@@ -103,7 +102,7 @@ NUMEROLOGÍA: Número de vida ${numerologia.numero_vida || numerologia.life_path
 ASTROLOGÍA: ${astrologia.signo} (${astrologia.elemento})
 PREGUNTA: ${pregunta || 'Guía general'}
 
-Devuelve JSON:
+Devuelve SOLO el JSON sin markdown ni explicaciones adicionales:
 {
   "titulo": "Título de 4-6 palabras",
   "resumen": "1 línea síntesis",
@@ -113,28 +112,27 @@ Devuelve JSON:
   "cierre": "Cierre KUNNA contenedor"
 }`;
 
-    console.log('[holistico] Consultando AL-E...');
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    console.log('[holistico] Consultando AL-E Core...');
+    const response = await fetch(ALE_CORE_URL, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_KEY}`
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: ALE_MODEL,
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.8,
-        max_tokens: 800
+        message: prompt,
+        stream: false
       }),
-      timeout: 10000
+      timeout: 15000
     });
     
     if (!response.ok) {
-      throw new Error(`OpenAI status ${response.status}`);
+      throw new Error(`AL-E Core status ${response.status}`);
     }
     
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
+    
+    // Extraer respuesta según formato de tu backend
+    const content = data.response || data.message || data.content;
     
     if (!content) throw new Error('Respuesta vacía de AL-E');
     
@@ -245,17 +243,22 @@ exports.handler = async (event, context) => {
     if (RAPIDAPI_KEY) {
       try {
         console.log('[holistico] Consultando RapidAPI (numerología)...');
-        const numeroRes = await fetch(`https://${RAPIDAPI_HOST}/lucky_numbers/post`, {
-          method: 'POST',
+        
+        // Parsear fecha para query params (formato: birth_year, birth_month, birth_day)
+        const [year, month, day] = fecha_nacimiento.split('-');
+        const queryParams = new URLSearchParams({
+          birth_year: year,
+          birth_month: month,
+          birth_day: day
+        });
+        
+        // GET request (NO POST!) según documentación oficial
+        const numeroRes = await fetch(`https://${RAPIDAPI_HOST}/life_path?${queryParams}`, {
+          method: 'GET',
           headers: {
-            'Content-Type': 'application/json',
             'x-rapidapi-key': RAPIDAPI_KEY,
             'x-rapidapi-host': RAPIDAPI_HOST
           },
-          body: JSON.stringify({
-            date: fecha_nacimiento,
-            name: name || 'Usuario'
-          }),
           timeout: 5000
         });
         
@@ -266,13 +269,18 @@ exports.handler = async (event, context) => {
         }
         
         if (!numeroRes.ok) {
+          const errorText = await numeroRes.text().catch(() => 'No details');
+          console.error('[holistico] RapidAPI error body:', errorText);
           throw new Error(`RapidAPI status ${numeroRes.status}`);
         }
         
         const numeroJson = await numeroRes.json();
+        console.log('[holistico] RapidAPI response OK:', numeroJson.life_path_number);
+        
         numerologiaData = {
-          lucky_numbers: numeroJson.lucky_numbers || [],
-          life_path_number: numeroJson.life_path_number || null
+          life_path_number: numeroJson.life_path_number,
+          summary: numeroJson.summary,
+          detailed_meaning: numeroJson.detailed_meaning
         };
         numerologiaSource = 'rapidapi';
         console.log('[holistico] ✅ Numerología RapidAPI');
