@@ -33,7 +33,9 @@ const rapidAPIFetch = async (endpoint: string, birthdate: string, full_name: str
   })
 
   if (!response.ok) {
-    throw new Error(`RapidAPI ${endpoint} error: ${response.status}`)
+    const errorText = await response.text().catch(() => 'Unknown error')
+    console.error(`RapidAPI ${endpoint} failed:`, response.status, errorText)
+    throw new Error(`RapidAPI ${endpoint} error: ${response.status} - Verifica tu suscripción en RapidAPI`)
   }
 
   return await response.json()
