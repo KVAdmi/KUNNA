@@ -1,376 +1,156 @@
 // src/services/numerologiaService.js
-// Servicio completo para The Numerology API (100+ endpoints)
+// Servicio completo para Numerología via Netlify Function
 
-const RAPIDAPI_KEY = import.meta.env.VITE_RAPIDAPI_KEY;
-const RAPIDAPI_HOST = 'the-numerology-api.p.rapidapi.com';
-const BASE_URL = `https://${RAPIDAPI_HOST}`;
-
-// Headers comunes para POST
-const headers = {
-  'Content-Type': 'application/json',
-  'x-rapidapi-key': RAPIDAPI_KEY,
-  'x-rapidapi-host': RAPIDAPI_HOST
-};
+const NETLIFY_FUNCTION_URL = 'https://kunna.help/.netlify/functions/numerologia';
 
 /**
- * Parsea fecha de nacimiento a formato API
- * @param {string} fecha - Formato YYYY-MM-DD
- * @returns {string} - Formato YYYY-MM-DD
+ * Helper para llamar al Netlify Function de numerología
+ * @param {string} endpoint - Nombre del endpoint de RapidAPI
+ * @param {string} birthdate - Formato YYYY-MM-DD
+ * @param {string} full_name - Nombre completo
  */
-function formatFecha(fecha) {
-  return fecha; // Ya viene en formato correcto
+async function callNumerologia(endpoint, birthdate, full_name = 'Unknown') {
+  try {
+    const response = await fetch(NETLIFY_FUNCTION_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        endpoint,
+        birthdate,
+        full_name
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    const result = await response.json();
+    
+    if (!result.ok) {
+      throw new Error(result.error || 'Error en numerología');
+    }
+    
+    return result.data;
+    
+  } catch (error) {
+    console.error(`[Numerología] ${endpoint} error:`, error);
+    return null;
+  }
 }
 
 /**
  * 1. Life Path Number (número de camino de vida)
  */
 export async function getLifePath(fecha, nombre = '') {
-  try {
-    const body = JSON.stringify({
-      birthdate: formatFecha(fecha),
-      full_name: nombre
-    });
-    const res = await fetch(`${BASE_URL}/life_path`, {
-      method: 'POST',
-      headers,
-      body
-    });
-    if (!res.ok) throw new Error(`Life Path error: ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error('[Numerología] Life Path:', error);
-    return null;
-  }
+  return await callNumerologia('life_path', fecha, nombre);
 }
 
 /**
  * 2. Soul Urge Number (número del alma)
  */
 export async function getSoulUrge(fecha, nombre) {
-  try {
-    const body = JSON.stringify({
-      birthdate: formatFecha(fecha),
-      full_name: nombre
-    });
-    const res = await fetch(`${BASE_URL}/soul_urge`, {
-      method: 'POST',
-      headers,
-      body
-    });
-    if (!res.ok) throw new Error(`Soul Urge error: ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error('[Numerología] Soul Urge:', error);
-    return null;
-  }
+  return await callNumerologia('soul_urge', fecha, nombre);
 }
 
 /**
  * 3. Expression/Destiny Number (número de expresión/destino)
  */
 export async function getExpression(fecha, nombre) {
-  try {
-    const body = JSON.stringify({
-      birthdate: formatFecha(fecha),
-      full_name: nombre
-    });
-    const res = await fetch(`${BASE_URL}/expression`, {
-      method: 'POST',
-      headers,
-      body
-    });
-    if (!res.ok) throw new Error(`Expression error: ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error('[Numerología] Expression:', error);
-    return null;
-  }
+  return await callNumerologia('expression', fecha, nombre);
 }
 
 /**
  * 4. Personality Number (número de personalidad)
  */
 export async function getPersonality(fecha, nombre) {
-  try {
-    const body = JSON.stringify({
-      birthdate: formatFecha(fecha),
-      full_name: nombre
-    });
-    const res = await fetch(`${BASE_URL}/personality`, {
-      method: 'POST',
-      headers,
-      body
-    });
-    if (!res.ok) throw new Error(`Personality error: ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error('[Numerología] Personality:', error);
-    return null;
-  }
+  return await callNumerologia('personality', fecha, nombre);
 }
 
 /**
  * 5. Birthday Number (número de cumpleaños)
  */
 export async function getBirthday(fecha, nombre = '') {
-  try {
-    const body = JSON.stringify({
-      birthdate: formatFecha(fecha),
-      full_name: nombre
-    });
-    const res = await fetch(`${BASE_URL}/birthday`, {
-      method: 'POST',
-      headers,
-      body
-    });
-    if (!res.ok) throw new Error(`Birthday error: ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error('[Numerología] Birthday:', error);
-    return null;
-  }
+  return await callNumerologia('birthday', fecha, nombre);
 }
 
 /**
  * 6. Attitude Number (número de actitud)
  */
 export async function getAttitude(fecha, nombre = '') {
-  try {
-    const body = JSON.stringify({
-      birthdate: formatFecha(fecha),
-      full_name: nombre
-    });
-    const res = await fetch(`${BASE_URL}/attitude`, {
-      method: 'POST',
-      headers,
-      body
-    });
-    if (!res.ok) throw new Error(`Attitude error: ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error('[Numerología] Attitude:', error);
-    return null;
-  }
+  return await callNumerologia('attitude', fecha, nombre);
 }
 
 /**
  * 7. Karmic Debt Numbers (números de deuda kármica)
  */
 export async function getKarmicDebt(fecha, nombre) {
-  try {
-    const body = JSON.stringify({
-      birthdate: formatFecha(fecha),
-      full_name: nombre
-    });
-    const res = await fetch(`${BASE_URL}/karmic_debt`, {
-      method: 'POST',
-      headers,
-      body
-    });
-    if (!res.ok) throw new Error(`Karmic Debt error: ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error('[Numerología] Karmic Debt:', error);
-    return null;
-  }
+  return await callNumerologia('karmic_debt', fecha, nombre);
 }
 
 /**
  * 8. Karmic Lesson Numbers (lecciones kármicas)
  */
 export async function getKarmicLessons(fecha, nombre) {
-  try {
-    const body = JSON.stringify({
-      birthdate: formatFecha(fecha),
-      full_name: nombre
-    });
-    const res = await fetch(`${BASE_URL}/karmic_lessons`, {
-      method: 'POST',
-      headers,
-      body
-    });
-    if (!res.ok) throw new Error(`Karmic Lessons error: ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error('[Numerología] Karmic Lessons:', error);
-    return null;
-  }
+  return await callNumerologia('karmic_lessons', fecha, nombre);
 }
 
 /**
  * 9. Challenge Numbers (números de desafío)
  */
 export async function getChallengeNumbers(fecha, nombre = '') {
-  try {
-    const body = JSON.stringify({
-      birthdate: formatFecha(fecha),
-      full_name: nombre
-    });
-    const res = await fetch(`${BASE_URL}/challenge`, {
-      method: 'POST',
-      headers,
-      body
-    });
-    if (!res.ok) throw new Error(`Challenge error: ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error('[Numerología] Challenge:', error);
-    return null;
-  }
+  return await callNumerologia('challenge', fecha, nombre);
 }
 
 /**
  * 10. Lucky Numbers (números de la suerte)
  */
 export async function getLuckyNumbers(fecha, nombre) {
-  try {
-    const body = JSON.stringify({
-      birthdate: formatFecha(fecha),
-      full_name: nombre
-    });
-    const res = await fetch(`${BASE_URL}/lucky_numbers`, {
-      method: 'POST',
-      headers,
-      body
-    });
-    if (!res.ok) throw new Error(`Lucky Numbers error: ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error('[Numerología] Lucky Numbers:', error);
-    return null;
-  }
+  return await callNumerologia('lucky_numbers', fecha, nombre);
 }
 
 /**
  * 11. Personal Year Number (año personal)
  */
 export async function getPersonalYear(fecha, nombre = '') {
-  try {
-    const body = JSON.stringify({
-      birthdate: formatFecha(fecha),
-      full_name: nombre
-    });
-    const res = await fetch(`${BASE_URL}/personal_year`, {
-      method: 'POST',
-      headers,
-      body
-    });
-    if (!res.ok) throw new Error(`Personal Year error: ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error('[Numerología] Personal Year:', error);
-    return null;
-  }
+  return await callNumerologia('personal_year', fecha, nombre);
 }
 
 /**
  * 12. Personal Month Number (mes personal)
  */
 export async function getPersonalMonth(fecha, nombre = '') {
-  try {
-    const body = JSON.stringify({
-      birthdate: formatFecha(fecha),
-      full_name: nombre
-    });
-    const res = await fetch(`${BASE_URL}/personal_month`, {
-      method: 'POST',
-      headers,
-      body
-    });
-    if (!res.ok) throw new Error(`Personal Month error: ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error('[Numerología] Personal Month:', error);
-    return null;
-  }
+  return await callNumerologia('personal_month', fecha, nombre);
 }
 
 /**
  * 13. Personal Day Number (día personal)
  */
 export async function getPersonalDay(fecha, nombre = '') {
-  try {
-    const body = JSON.stringify({
-      birthdate: formatFecha(fecha),
-      full_name: nombre
-    });
-    const res = await fetch(`${BASE_URL}/personal_day`, {
-      method: 'POST',
-      headers,
-      body
-    });
-    if (!res.ok) throw new Error(`Personal Day error: ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error('[Numerología] Personal Day:', error);
-    return null;
-  }
+  return await callNumerologia('personal_day', fecha, nombre);
 }
 
 /**
  * 14. Balance Number (número de equilibrio)
  */
 export async function getBalance(fecha, nombre) {
-  try {
-    const body = JSON.stringify({
-      birthdate: formatFecha(fecha),
-      full_name: nombre
-    });
-    const res = await fetch(`${BASE_URL}/balance`, {
-      method: 'POST',
-      headers,
-      body
-    });
-    if (!res.ok) throw new Error(`Balance error: ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error('[Numerología] Balance:', error);
-    return null;
-  }
+  return await callNumerologia('balance', fecha, nombre);
 }
 
 /**
  * 15. Maturity Number (número de madurez)
  */
 export async function getMaturity(fecha, nombre) {
-  try {
-    const body = JSON.stringify({
-      birthdate: formatFecha(fecha),
-      full_name: nombre
-    });
-    const res = await fetch(`${BASE_URL}/maturity`, {
-      method: 'POST',
-      headers,
-      body
-    });
-    if (!res.ok) throw new Error(`Maturity error: ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error('[Numerología] Maturity:', error);
-    return null;
-  }
+  return await callNumerologia('maturity', fecha, nombre);
 }
 
 /**
  * 16. Rational Thought Number (pensamiento racional)
  */
 export async function getRationalThought(fecha, nombre) {
-  try {
-    const body = JSON.stringify({
-      birthdate: formatFecha(fecha),
-      full_name: nombre
-    });
-    const res = await fetch(`${BASE_URL}/rational_thought`, {
-      method: 'POST',
-      headers,
-      body
-    });
-    if (!res.ok) throw new Error(`Rational Thought error: ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error('[Numerología] Rational Thought:', error);
-    return null;
-  }
+  return await callNumerologia('rational_thought', fecha, nombre);
 }
 
 /**

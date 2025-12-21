@@ -1,176 +1,173 @@
 // src/services/astrologiaService.js
-// Servicio completo para Astrología y Horóscopos (RapidAPI)
-
-const RAPIDAPI_KEY = import.meta.env.VITE_RAPIDAPI_KEY;
-const RAPIDAPI_HOST = 'the-numerology-api.p.rapidapi.com';
-const BASE_URL = `https://${RAPIDAPI_HOST}`;
-
-const headers = {
-  'x-rapidapi-key': RAPIDAPI_KEY,
-  'x-rapidapi-host': RAPIDAPI_HOST
-};
-
-// Mapa de signos zodiacales
-const SIGNOS_ZODIACALES = {
-  aries: 'aries',
-  tauro: 'taurus',
-  geminis: 'gemini',
-  cancer: 'cancer',
-  leo: 'leo',
-  virgo: 'virgo',
-  libra: 'libra',
-  escorpio: 'scorpio',
-  sagitario: 'sagittarius',
-  capricornio: 'capricorn',
-  acuario: 'aquarius',
-  piscis: 'pisces'
-};
+// Servicio de Astrología (LOCAL - no requiere API)
 
 /**
- * Calcular signo zodiacal desde fecha de nacimiento
+ * Calcula el signo zodiacal basado en fecha de nacimiento
+ * @param {string} fecha - Formato YYYY-MM-DD
+ * @returns {Object} { signo, elemento, fechaInicio, fechaFin }
  */
 export function calcularSigno(fecha) {
-  const [year, month, day] = fecha.split('-').map(Number);
+  const [year, month, day] = fecha.split('-');
+  const m = parseInt(month);
+  const d = parseInt(day);
   
-  if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return 'aries';
-  if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return 'taurus';
-  if ((month === 5 && day >= 21) || (month === 6 && day <= 20)) return 'gemini';
-  if ((month === 6 && day >= 21) || (month === 7 && day <= 22)) return 'cancer';
-  if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return 'leo';
-  if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) return 'virgo';
-  if ((month === 9 && day >= 23) || (month === 10 && day <= 22)) return 'libra';
-  if ((month === 10 && day >= 23) || (month === 11 && day <= 21)) return 'scorpio';
-  if ((month === 11 && day >= 22) || (month === 12 && day <= 21)) return 'sagittarius';
-  if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) return 'capricorn';
-  if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return 'aquarius';
-  return 'pisces';
+  const signos = [
+    { nombre: 'Capricornio', elemento: 'Tierra', inicio: [12, 22], fin: [1, 19] },
+    { nombre: 'Acuario', elemento: 'Aire', inicio: [1, 20], fin: [2, 18] },
+    { nombre: 'Piscis', elemento: 'Agua', inicio: [2, 19], fin: [3, 20] },
+    { nombre: 'Aries', elemento: 'Fuego', inicio: [3, 21], fin: [4, 19] },
+    { nombre: 'Tauro', elemento: 'Tierra', inicio: [4, 20], fin: [5, 20] },
+    { nombre: 'Géminis', elemento: 'Aire', inicio: [5, 21], fin: [6, 20] },
+    { nombre: 'Cáncer', elemento: 'Agua', inicio: [6, 21], fin: [7, 22] },
+    { nombre: 'Leo', elemento: 'Fuego', inicio: [7, 23], fin: [8, 22] },
+    { nombre: 'Virgo', elemento: 'Tierra', inicio: [8, 23], fin: [9, 22] },
+    { nombre: 'Libra', elemento: 'Aire', inicio: [9, 23], fin: [10, 22] },
+    { nombre: 'Escorpio', elemento: 'Agua', inicio: [10, 23], fin: [11, 21] },
+    { nombre: 'Sagitario', elemento: 'Fuego', inicio: [11, 22], fin: [12, 21] }
+  ];
+  
+  for (const signo of signos) {
+    const [mesInicio, diaInicio] = signo.inicio;
+    const [mesFin, diaFin] = signo.fin;
+    
+    // Caso especial: Capricornio cruza el año
+    if (signo.nombre === 'Capricornio') {
+      if ((m === 12 && d >= 22) || (m === 1 && d <= 19)) {
+        return {
+          signo: signo.nombre,
+          elemento: signo.elemento,
+          fechaInicio: '22/12',
+          fechaFin: '19/01'
+        };
+      }
+    } else {
+      if ((m === mesInicio && d >= diaInicio) || (m === mesFin && d <= diaFin)) {
+        return {
+          signo: signo.nombre,
+          elemento: signo.elemento,
+          fechaInicio: `${diaInicio}/${mesInicio}`,
+          fechaFin: `${diaFin}/${mesFin}`
+        };
+      }
+    }
+  }
+  
+  return { signo: 'Desconocido', elemento: 'Desconocido' };
 }
 
 /**
- * Obtener elemento del signo
+ * Obtiene el elemento del signo
+ * @param {string} signo 
+ * @returns {string}
  */
 export function getElemento(signo) {
-  const fuego = ['aries', 'leo', 'sagittarius'];
-  const tierra = ['taurus', 'virgo', 'capricorn'];
-  const aire = ['gemini', 'libra', 'aquarius'];
-  const agua = ['cancer', 'scorpio', 'pisces'];
+  const elementos = {
+    'Aries': 'Fuego',
+    'Tauro': 'Tierra',
+    'Géminis': 'Aire',
+    'Cáncer': 'Agua',
+    'Leo': 'Fuego',
+    'Virgo': 'Tierra',
+    'Libra': 'Aire',
+    'Escorpio': 'Agua',
+    'Sagitario': 'Fuego',
+    'Capricornio': 'Tierra',
+    'Acuario': 'Aire',
+    'Piscis': 'Agua'
+  };
   
-  if (fuego.includes(signo)) return 'fuego';
-  if (tierra.includes(signo)) return 'tierra';
-  if (aire.includes(signo)) return 'aire';
-  if (agua.includes(signo)) return 'agua';
-  return 'desconocido';
+  return elementos[signo] || 'Desconocido';
 }
 
 /**
- * 1. Horóscopo Diario
+ * Genera horóscopo del día (simulado - en el futuro conectar a API real)
+ * @param {string} signo 
+ * @returns {Object}
  */
 export async function getHoroscopoDiario(signo) {
-  try {
-    const params = new URLSearchParams({ sign: signo });
-    const res = await fetch(`${BASE_URL}/daily_horoscope?${params}`, { headers });
-    if (!res.ok) throw new Error(`Daily Horoscope error: ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error('[Astrología] Horóscopo Diario:', error);
-    return null;
-  }
-}
-
-/**
- * 2. Horóscopo Semanal
- */
-export async function getHoroscopoSemanal(signo) {
-  try {
-    const params = new URLSearchParams({ sign: signo });
-    const res = await fetch(`${BASE_URL}/weekly_horoscope?${params}`, { headers });
-    if (!res.ok) throw new Error(`Weekly Horoscope error: ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error('[Astrología] Horóscopo Semanal:', error);
-    return null;
-  }
-}
-
-/**
- * 3. Horóscopo Mensual
- */
-export async function getHoroscopoMensual(signo) {
-  try {
-    const params = new URLSearchParams({ sign: signo });
-    const res = await fetch(`${BASE_URL}/monthly_horoscope?${params}`, { headers });
-    if (!res.ok) throw new Error(`Monthly Horoscope error: ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error('[Astrología] Horóscopo Mensual:', error);
-    return null;
-  }
-}
-
-/**
- * 4. Zodiac Birth Chart Data (datos básicos de carta natal)
- */
-export async function getBirthChart(fecha) {
-  try {
-    const [year, month, day] = fecha.split('-');
-    const params = new URLSearchParams({
-      birth_year: year,
-      birth_month: month,
-      birth_day: day
-    });
-    const res = await fetch(`${BASE_URL}/zodiac?${params}`, { headers });
-    if (!res.ok) throw new Error(`Birth Chart error: ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error('[Astrología] Birth Chart:', error);
-    return null;
-  }
-}
-
-/**
- * 5. Compatibilidad Zodiacal
- */
-export async function getCompatibilidad(signo1, signo2) {
-  try {
-    const params = new URLSearchParams({
-      sign1: signo1,
-      sign2: signo2
-    });
-    const res = await fetch(`${BASE_URL}/compatibility?${params}`, { headers });
-    if (!res.ok) throw new Error(`Compatibility error: ${res.status}`);
-    return await res.json();
-  } catch (error) {
-    console.error('[Astrología] Compatibilidad:', error);
-    return null;
-  }
-}
-
-/**
- * FUNCIÓN MAESTRA: Lectura astrológica completa
- */
-export async function getAstrologiaCompleta(fecha) {
-  console.log('[Astrología] Obteniendo lectura completa...');
+  // Por ahora retornamos un mensaje genérico
+  // TODO: Conectar a una API de horóscopos real
   
-  const signo = calcularSigno(fecha);
-  const elemento = getElemento(signo);
-  
-  const [diario, semanal, mensual, birthChart] = await Promise.all([
-    getHoroscopoDiario(signo),
-    getHoroscopoSemanal(signo),
-    getHoroscopoMensual(signo),
-    getBirthChart(fecha)
-  ]);
+  const mensajes = {
+    'Aries': 'Tu energía está en su punto más alto. Aprovecha para iniciar proyectos.',
+    'Tauro': 'La estabilidad que buscas está cerca. Confía en tu proceso.',
+    'Géminis': 'Tu comunicación brilla hoy. Expresa tus ideas con claridad.',
+    'Cáncer': 'Tus emociones son tu guía. Honra lo que sientes.',
+    'Leo': 'Tu luz interior ilumina a quienes te rodean. Brilla con autenticidad.',
+    'Virgo': 'El detalle hace la diferencia. Tu precisión es tu superpoder.',
+    'Libra': 'Encuentra el balance entre dar y recibir. El equilibrio es tuyo.',
+    'Escorpio': 'La transformación toca a tu puerta. Permítete renacer.',
+    'Sagitario': 'Tu búsqueda de verdad te expande. Sigue explorando.',
+    'Capricornio': 'Tu disciplina construye tu legado. Sigue firme en tu camino.',
+    'Acuario': 'Tu visión única es necesaria. Comparte tu perspectiva.',
+    'Piscis': 'Fluye con las mareas de la vida. Tu intuición te guía.'
+  };
   
   return {
     signo,
-    elemento,
+    fecha: new Date().toLocaleDateString('es-ES'),
+    mensaje: mensajes[signo] || 'Las estrellas te sonríen hoy.',
+    consejo: 'Mantén tu corazón abierto a las señales del universo.'
+  };
+}
+
+/**
+ * Genera horóscopo semanal
+ * @param {string} signo 
+ * @returns {Object}
+ */
+export async function getHoroscopoSemanal(signo) {
+  return {
+    signo,
+    semana: 'Semana actual',
+    mensaje: `Esta semana trae oportunidades de crecimiento para ${signo}. Mantén tu enfoque en lo que realmente importa.`,
+    areas: {
+      amor: 'Las relaciones se fortalecen con comunicación honesta.',
+      trabajo: 'Tu esfuerzo será reconocido. Sigue adelante.',
+      salud: 'Prioriza tu autocuidado. Tu cuerpo es tu templo.'
+    }
+  };
+}
+
+/**
+ * Genera horóscopo mensual
+ * @param {string} signo 
+ * @returns {Object}
+ */
+export async function getHoroscopoMensual(signo) {
+  const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  const mesActual = meses[new Date().getMonth()];
+  
+  return {
+    signo,
+    mes: mesActual,
+    mensaje: `${mesActual} trae transformaciones significativas para ${signo}. Confía en el proceso.`,
+    prediccion: `Este mes te invita a expandir tus horizontes y conectar con tu propósito más profundo.`
+  };
+}
+
+/**
+ * FUNCIÓN MAESTRA: Obtiene astrología completa
+ * @param {string} fecha - Formato YYYY-MM-DD
+ * @returns {Promise<Object>}
+ */
+export async function getAstrologiaCompleta(fecha) {
+  const signoData = calcularSigno(fecha);
+  
+  const [diario, semanal, mensual] = await Promise.all([
+    getHoroscopoDiario(signoData.signo),
+    getHoroscopoSemanal(signoData.signo),
+    getHoroscopoMensual(signoData.signo)
+  ]);
+  
+  return {
+    ...signoData,
     horoscopo: {
       diario,
       semanal,
       mensual
-    },
-    birthChart,
-    timestamp: new Date().toISOString()
+    }
   };
 }
 
@@ -180,7 +177,5 @@ export default {
   getHoroscopoDiario,
   getHoroscopoSemanal,
   getHoroscopoMensual,
-  getBirthChart,
-  getCompatibilidad,
   getAstrologiaCompleta
 };
