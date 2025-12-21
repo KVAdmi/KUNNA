@@ -22,9 +22,19 @@ const rapidAPIFetch = async (endpoint: string, birthdate: string, full_name: str
     throw new Error('RAPIDAPI_KEY no configurada en Supabase')
   }
 
-  // La API usa GET con query params, no POST con body
+  // Parsear birthdate YYYY-MM-DD a componentes separados
+  const [birth_year, birth_month, birth_day] = birthdate.split('-')
+  
+  // La API usa GET con birth_year, birth_month, birth_day separados
   const encodedName = encodeURIComponent(full_name)
-  const url = `https://${RAPIDAPI_HOST}/${endpoint}?birthdate=${birthdate}&full_name=${encodedName}`
+  const params = new URLSearchParams({
+    birth_year,
+    birth_month,
+    birth_day,
+    full_name: encodedName
+  })
+  
+  const url = `https://${RAPIDAPI_HOST}/${endpoint}?${params.toString()}`
 
   const response = await fetch(url, {
     method: 'GET',
@@ -81,52 +91,42 @@ Deno.serve(async (req: Request) => {
       user: { birthdate, full_name },
     }
 
-    // 🔢 NUMEROLOGÍA (los 16 números)
+    // 🔢 NUMEROLOGÍA (endpoints principales confirmados)
     if (includeNumerology) {
       try {
         console.log('🔢 Obteniendo numerología...')
-        const [
-          lifePath,
-          destiny,
-          soulUrge,
-          personality,
-          maturity,
-          birthDay,
-          challenges,
-          pinnacles,
-          periods,
-          personal,
-          universal,
-          planes,
-        ] = await Promise.all([
-          rapidAPIFetch('lifepath', birthdate, full_name),
+        
+        // Llamar endpoints en grupos para mejor manejo de errores
+        const coreNumbers = await Promise.allSettled([
+          rapidAPIFetch('life_path', birthdate, full_name),
           rapidAPIFetch('destiny', birthdate, full_name),
-          rapidAPIFetch('soulurge', birthdate, full_name),
+          rapidAPIFetch('soul_urge', birthdate, full_name),
           rapidAPIFetch('personality', birthdate, full_name),
+        ])
+
+        const additionalNumbers = await Promise.allSettled([
           rapidAPIFetch('maturity', birthdate, full_name),
           rapidAPIFetch('birthday', birthdate, full_name),
+          rapidAPIFetch('personal_year', birthdate, full_name),
+        ])
+
+        const cyclesNumbers = await Promise.allSettled([
           rapidAPIFetch('challenges', birthdate, full_name),
           rapidAPIFetch('pinnacles', birthdate, full_name),
-          rapidAPIFetch('periods', birthdate, full_name),
-          rapidAPIFetch('personalyear', birthdate, full_name),
-          rapidAPIFetch('universalyear', birthdate, full_name),
-          rapidAPIFetch('planesofexpression', birthdate, full_name),
         ])
 
         result.numerology = {
-          lifePath,
-          destiny,
-          soulUrge,
-          personality,
-          maturity,
-          birthDay,
-          challenges,
-          pinnacles,
-          periods,
-          personalYear: personal,
-          universalYear: universal,
-          planesOfExpression: planes,
+          lifePath: coreNumbers[0].status === 'fulfilled' ? coreNumbers[0].value : null,
+          destiny: coreNumbers[1].status === 'fulfilled' ? coreNumbers[1].value : null,
+          soulUrge: coreNumbers[2].status === 'fulfilled' ? coreNumbers[2].value : null,
+          personality: coreNumbers[3].status === 'fulfilled' ? coreNumbers[3].value : null,
+          maturity: additionalNumbers[0].status === 'fulfilled' ? additionalNumbers[0].value : null,
+          birthDay: additionalNumbers[1].status === 'fulfilled' ? additionalNumbers[1].value : null,
+          personalYear: additionalNumbers[2].status === 'fulfilled' ? additionalNumbers[2].value : null,
+          challenges: cyclesNumbers[0].status === 'fulfilled' ? cyclesNumbers[0].value : null,
+          pinnacles: cyclesNumbers[1].status === 'fulfilled' ? cyclesNumbers[1].value : null,
         }
+        
         console.log('✅ Numerología obtenida')
       } catch (err) {
         console.error('❌ Error en numerología:', err)
