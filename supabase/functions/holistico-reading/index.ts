@@ -22,20 +22,22 @@ const rapidAPIFetch = async (endpoint: string, birthdate: string, full_name: str
     throw new Error('RAPIDAPI_KEY no configurada en Supabase')
   }
 
-  const response = await fetch(`https://${RAPIDAPI_HOST}/${endpoint}`, {
-    method: 'POST',
+  // La API usa GET con query params, no POST con body
+  const encodedName = encodeURIComponent(full_name)
+  const url = `https://${RAPIDAPI_HOST}/${endpoint}?birthdate=${birthdate}&full_name=${encodedName}`
+
+  const response = await fetch(url, {
+    method: 'GET',
     headers: {
-      'Content-Type': 'application/json',
       'x-rapidapi-key': RAPIDAPI_KEY,
       'x-rapidapi-host': RAPIDAPI_HOST,
     },
-    body: JSON.stringify({ birthdate, full_name }),
   })
 
   if (!response.ok) {
     const errorText = await response.text().catch(() => 'Unknown error')
     console.error(`RapidAPI ${endpoint} failed:`, response.status, errorText)
-    throw new Error(`RapidAPI ${endpoint} error: ${response.status} - Verifica tu suscripción en RapidAPI`)
+    throw new Error(`RapidAPI ${endpoint} error: ${response.status}`)
   }
 
   return await response.json()
