@@ -1,12 +1,14 @@
 // src/services/holisticoApi.js
-// Helper para consumir Zona Holística (Netlify Function)
+// Helper para consumir Zona Holística (Supabase Edge Function)
+
+import { supabase } from '../lib/supabaseClient';
 
 /**
- * Obtiene lectura holística unificada (Tarot + Numerología + Astrología + AL-E)
+ * Obtiene lectura holística unificada (Tarot + Numerología + Astrología)
  * @param {Object} payload
  * @param {string} payload.fecha_nacimiento - Formato YYYY-MM-DD
- * @param {string} [payload.pregunta] - Pregunta opcional del usuario
- * @param {string} [payload.name] - Nombre opcional para numerología
+ * @param {string} [payload.pregunta] - Pregunta opcional del usuario (no usado actualmente)
+ * @param {string} [payload.name] - Nombre completo para numerología
  * @returns {Promise<Object>} Lectura holística
  */
 export async function getHolisticoReading({ fecha_nacimiento, pregunta, name }) {
@@ -16,44 +18,48 @@ export async function getHolisticoReading({ fecha_nacimiento, pregunta, name }) 
       throw new Error('fecha_nacimiento es requerida');
     }
 
-    // Determinar URL según entorno
-    // TEMPORAL: usar producción siempre (Netlify dev requiere puerto 8888)
-    const baseURL = 'https://kunna.help';
+    if (!name) {
+      throw new Error('name es requerido para numerología');
+    }
 
-    const url = `${baseURL}/.netlify/functions/holistico-reading`;
+    // Usar Supabase Edge Function (backend proxy seguro)
+    const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/holistico-reading`;
 
-    console.log('[holisticoApi] Consultando:', url);
+    console.log('[holisticoApi] Consultando Edge Function:', url);
 
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
       },
       body: JSON.stringify({
-        fecha_nacimiento,
-        pregunta: pregunta || null,
-        name: name || null
+        birthdate: fecha_nacimiento,
+        full_name: name,
+        includeNumerology: true,
+        includeTarot: true,
+        includeAstrology: false // Agregar cuando tengas API
       })
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error?.message || `HTTP ${response.status}`);
+      throw new Error(errorData.error || `HTTP ${response.status}`);
     }
 
     const data = await response.json();
 
     // Validar estructura de respuesta
     if (!data.ok) {
-      throw new Error(data.error?.message || 'Lectura no disponible');
+      throw new Error(data.error || 'Lectura no disponible');
     }
 
-    console.log('[holisticoApi] ✅ Lectura obtenida', {
-      source: data.source,
-      hasInterpretacion: !!data.interpretacion
+    console.log('[holisticoApi] ✅ Lectura obtenida desde Edge Function', {
+      hasNumerology: !!data.data.numerology,
+      hasTarot: !!data.data.tarot
     });
 
-    return data;
+    return data.data; // La Edge Function envuelve en { ok: true, data: {...} }
 
   } catch (error) {
     console.error('[holisticoApi] Error:', error);
@@ -67,7 +73,7 @@ export async function getHolisticoReading({ fecha_nacimiento, pregunta, name }) 
  * @returns {Object} Lectura formateada
  */
 export function formatHolisticoReading(reading) {
-  if (!reading || !reading.ok) {
+  if (!reading) {
     return {
       titulo: 'Lectura no disponible',
       contenido: 'No se pudo generar la lectura en este momento.',
@@ -75,38 +81,34 @@ export function formatHolisticoReading(reading) {
     };
   }
 
-  const { tarot, numerologia, astrologia, interpretacion, warnings, source } = reading;
+  const { numerology, tarot, astrology } = reading;
 
   return {
     // Datos crudos
-    tarot: {
-      nombre: tarot.nombre,
-      keywords: tarot.keywords,
-      imagen: tarot.imagen
-    },
-    numerologia: {
-      numero: numerologia.numero_vida || numerologia.life_path_number,
-      source: source.numerologia
-    },
-    astrologia: {
-      signo: astrologia.signo,
-      elemento: astrologia.elemento
-    },
+    tarot: tarot ? {
+      nombre: tarot.name,
+      keywords: tarot.keywords || [],
+      imagen: tarot.image || null,
+      significado: tarot.meaning || '',
+      descripcion: tarot.desc || ''
+    } : null,
 
-    // Interpretación AL-E (o básica)
-    interpretacion: {
-      titulo: interpretacion.titulo,
-      resumen: interpretacion.resumen,
-      lectura: interpretacion.lectura,
-      consejos: interpretacion.consejos || [],
-      afirmacion: interpretacion.afirmacion,
-      cierre: interpretacion.cierre
-    },
+    numerologia: numerology ? {
+      lifePath: numerology.lifePath,
+      destiny: numerology.destiny,
+      soulUrge: numerology.soulUrge,
+      personality: numerology.personality,
+      maturity: numerology.maturity,
+      birthDay: numerology.birthDay,
+      personalYear: numerology.personalYear,
+      universalYear: numerology.universalYear
+    } : null,
+
+    astrologia: astrology || null,
 
     // Metadata
-    usandoALE: source.ale,
-    warnings: warnings || [],
-    timestamp: reading.timestamp
+    timestamp: reading.timestamp,
+    user: reading.user
   };
 }
 

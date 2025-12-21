@@ -5,7 +5,6 @@ import { Sparkles, Moon, Wand2, Star, Download, PlayCircle, BookOpen, Droplets, 
 import { Button } from '@/components/ui/button';
 import TarotReading from '@/components/holistic-zone/TarotReading';
 import { getHolisticoReading, formatHolisticoReading } from '@/services/holisticoApi';
-import { getNumerologiaCompleta } from '@/services/numerologiaService';
 import { getAstrologiaCompleta } from '@/services/astrologiaService';
 
 
@@ -183,45 +182,37 @@ const HolisticZone = () => {
         try {
             console.log('[Holística] Iniciando lectura completa...');
             
-            // 1. Lectura holística base (Tarot + interpretación AL-E)
-            const readingPromise = getHolisticoReading({
+            // 1. Lectura holística base (Tarot + Numerología básica + interpretación)
+            const reading = await getHolisticoReading({
                 fecha_nacimiento: formData.fechaNacimiento,
                 name: formData.nombre,
                 pregunta: formData.pregunta || '¿Qué mensaje tiene el universo para mí hoy?'
             });
-
-            // 2. Numerología completa (16 endpoints)
-            const numerologiaPromise = getNumerologiaCompleta({
-                fecha: formData.fechaNacimiento,
-                nombre: formData.nombre
-            });
             
-            // 3. Astrología completa (horóscopos + birth chart)
-            const astrologiaPromise = getAstrologiaCompleta(formData.fechaNacimiento);
+            // 2. Astrología completa (horóscopos local)
+            const astrologia = await getAstrologiaCompleta(formData.fechaNacimiento);
             
-            // Ejecutar todo en paralelo
-            const [reading, numerologia, astrologia] = await Promise.all([
-                readingPromise,
-                numerologiaPromise,
-                astrologiaPromise
-            ]);
-
             // Formatear para UI
             const formatted = formatHolisticoReading(reading);
             
             // Guardar resultados
             setLecturaResult(formatted);
-            setNumerologiaData(numerologia);
+            
+            // Numerología viene en el reading del Netlify Function
+            setNumerologiaData({
+                lifePath: reading.numerologia
+            });
+            
             setAstrologiaData(astrologia);
 
             // Log de warnings si existen
-            if (formatted.warnings.length > 0) {
+            if (formatted.warnings && formatted.warnings.length > 0) {
                 console.warn('[Holística] Warnings:', formatted.warnings);
             }
 
             console.log('[Holística] ✅ Lectura completa generada:', {
                 usandoALE: formatted.usandoALE,
-                numerologiaOK: !!numerologia.lifePath,
+                numerologiaOK: !!reading.numerologia,
                 astrologiaOK: !!astrologia.signo
             });
 
