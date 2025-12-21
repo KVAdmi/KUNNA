@@ -1,4 +1,4 @@
-import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
+/// <reference types="https://esm.sh/@supabase/functions-js/src/edge-runtime.d.ts" />
 
 // CORS headers
 const corsHeaders = {
@@ -51,7 +51,7 @@ const tarotAPIFetch = async () => {
   return data.cards?.[0] || null
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -124,8 +124,9 @@ Deno.serve(async (req) => {
           planesOfExpression: planes,
         }
         console.log('✅ Numerología obtenida')
-      } catch (error) {
-        console.error('❌ Error en numerología:', error)
+      } catch (err) {
+        console.error('❌ Error en numerología:', err)
+        const error = err as Error
         result.numerology = { error: error.message }
       }
     }
@@ -137,8 +138,9 @@ Deno.serve(async (req) => {
         const card = await tarotAPIFetch()
         result.tarot = card
         console.log('✅ Tarot obtenido:', card?.name)
-      } catch (error) {
-        console.error('❌ Error en tarot:', error)
+      } catch (err) {
+        console.error('❌ Error en tarot:', err)
+        const error = err as Error
         result.tarot = { error: error.message }
       }
     }
@@ -153,8 +155,9 @@ Deno.serve(async (req) => {
     console.log('✅ Reading completo')
     return ok({ ok: true, data: result })
 
-  } catch (error) {
-    console.error('❌ Error general:', error)
+  } catch (err) {
+    console.error('❌ Error general:', err)
+    const error = err as Error
     return ok({ error: error.message }, 500)
   }
 })
