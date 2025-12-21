@@ -182,12 +182,14 @@ const HolisticZone = () => {
         try {
             console.log('[Holística] Iniciando lectura completa...');
             
-            // 1. Lectura holística base (Tarot + Numerología básica + interpretación)
+            // 1. Lectura holística base (Tarot + Numerología básica)
             const reading = await getHolisticoReading({
                 fecha_nacimiento: formData.fechaNacimiento,
                 name: formData.nombre,
                 pregunta: formData.pregunta || '¿Qué mensaje tiene el universo para mí hoy?'
             });
+            
+            console.log('[Holística] Raw reading:', reading);
             
             // 2. Astrología completa (horóscopos local)
             const astrologia = await getAstrologiaCompleta(formData.fechaNacimiento);
@@ -195,14 +197,15 @@ const HolisticZone = () => {
             // Formatear para UI
             const formatted = formatHolisticoReading(reading);
             
+            console.log('[Holística] Formatted reading:', formatted);
+            
             // Guardar resultados
             setLecturaResult(formatted);
             
-            // Numerología viene en el reading del Netlify Function
-            setNumerologiaData({
-                lifePath: reading.numerologia
-            });
+            // Numerología viene formateada
+            setNumerologiaData(formatted.numerologia || null);
             
+            // Astrología local
             setAstrologiaData(astrologia);
 
             // Log de warnings si existen
@@ -211,9 +214,9 @@ const HolisticZone = () => {
             }
 
             console.log('[Holística] ✅ Lectura completa generada:', {
-                usandoALE: formatted.usandoALE,
-                numerologiaOK: !!reading.numerologia,
-                astrologiaOK: !!astrologia.signo
+                tarot: formatted.tarot?.nombre,
+                numerologia: formatted.numerologia?.numero,
+                astrologia: astrologia?.signo
             });
 
         } catch (err) {

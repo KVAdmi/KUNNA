@@ -77,38 +77,52 @@ export function formatHolisticoReading(reading) {
     return {
       titulo: 'Lectura no disponible',
       contenido: 'No se pudo generar la lectura en este momento.',
-      warnings: []
+      warnings: [],
+      tarot: null,
+      numerologia: null,
+      astrologia: null
     };
   }
 
   const { numerology, tarot, astrology } = reading;
 
+  console.log('[formatHolisticoReading] Formateando:', { numerology, tarot, astrology });
+
   return {
-    // Datos crudos
+    // Datos de tarot (formato esperado por HolisticZone)
     tarot: tarot ? {
-      nombre: tarot.name,
+      nombre: tarot.name || 'Desconocido',
       keywords: tarot.keywords || [],
       imagen: tarot.image || null,
-      significado: tarot.meaning || '',
+      significado: tarot.meaning_up || tarot.meaning || '',
+      significadoInverso: tarot.meaning_rev || '',
       descripcion: tarot.desc || ''
     } : null,
 
-    numerologia: numerology ? {
-      lifePath: numerology.lifePath,
+    // Datos de numerología (formato esperado por HolisticZone)
+    numerologia: numerology && numerology.lifePath ? {
+      numero: numerology.lifePath.life_path_number || null,
+      significado: numerology.lifePath.summary || '',
+      detalles: numerology.lifePath.detailed_meaning || '',
+      // Datos adicionales si existen
       destiny: numerology.destiny,
       soulUrge: numerology.soulUrge,
       personality: numerology.personality,
       maturity: numerology.maturity,
       birthDay: numerology.birthDay,
-      personalYear: numerology.personalYear,
-      universalYear: numerology.universalYear
+      personalYear: numerology.personalYear
     } : null,
 
-    astrologia: astrology || null,
+    // Datos de astrología
+    astrologia: astrology ? {
+      signo: astrology.signo || null,
+      elemento: astrology.elemento || null
+    } : null,
 
     // Metadata
     timestamp: reading.timestamp,
-    user: reading.user
+    user: reading.user,
+    warnings: []
   };
 }
 
