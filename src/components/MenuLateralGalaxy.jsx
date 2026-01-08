@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Shield, Sparkles, Users, BookOpen, Heart, TrendingUp, Calendar, Library, Mic, ArrowRight, Home } from "lucide-react";
+import { X, Shield, Sparkles, Users, BookOpen, Heart, Calendar, Library, Mic, ArrowRight, Home, MessageCircle, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 
 // Este componente NO modifica el layout existente.
@@ -31,6 +31,20 @@ export default function MenuLateralGalaxy({
       color: "#382a3c" // Azul marino de tu paleta
     },
     { 
+      label: "Mi Círculo", 
+      href: "/circulo", 
+      subtitle: "Tu red privada de apoyo...",
+      icon: MessageCircle,
+      color: "#c8a6a6" // Rosa de tu paleta
+    },
+    { 
+      label: "Mis Secretos", 
+      href: "/mis-secretos", 
+      subtitle: "Tu bóveda segura encriptada...",
+      icon: Lock,
+      color: "#382a3c" // Morado oscuro
+    },
+    { 
       label: "Diario Emocional", 
       href: "/diario-emocional", 
       subtitle: "Tu refugio personal para...",
@@ -43,13 +57,6 @@ export default function MenuLateralGalaxy({
       subtitle: "Cuidado integral para tu...",
       icon: Heart,
       color: "#c1d43a" // Verde lima de tu paleta
-    },
-    { 
-      label: "Emprende en Casa", 
-      href: "/emprende", 
-      subtitle: "Herramientas para tu...",
-      icon: TrendingUp,
-      color: "#382a3c" // Morado oscuro de tu paleta
     },
     { 
       label: "Agenda Personal", 
@@ -166,7 +173,6 @@ export default function MenuLateralGalaxy({
                       '#382a3c', // Comunidad - morado oscuro
                       '#c8a6a6', // Diario - rosa
                       '#c1d43a', // Bienestar - lima
-                      '#382a3c', // Emprende - morado
                       '#8d7583', // Agenda - malva
                       '#382a3c', // Biblioteca - morado oscuro
                       '#c8a6a6'  // Podcast - rosa
@@ -179,7 +185,6 @@ export default function MenuLateralGalaxy({
                       'linear-gradient(135deg, rgba(56,42,60,0.3) 0%, rgba(141,117,131,0.2) 100%)',     // Comunidad
                       'linear-gradient(135deg, rgba(200,166,166,0.3) 0%, rgba(245,230,255,0.2) 100%)',  // Diario
                       'linear-gradient(135deg, rgba(193,212,58,0.3) 0%, rgba(200,166,166,0.2) 100%)',   // Bienestar
-                      'linear-gradient(135deg, rgba(56,42,60,0.3) 0%, rgba(193,212,58,0.2) 100%)',      // Emprende
                       'linear-gradient(135deg, rgba(141,117,131,0.3) 0%, rgba(245,230,255,0.2) 100%)',  // Agenda
                       'linear-gradient(135deg, rgba(56,42,60,0.3) 0%, rgba(245,230,255,0.2) 100%)',     // Biblioteca
                       'linear-gradient(135deg, rgba(200,166,166,0.3) 0%, rgba(193,212,58,0.2) 100%)'    // Podcast

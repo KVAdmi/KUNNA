@@ -4,7 +4,9 @@ import { Helmet } from 'react-helmet';
 import { AnimatePresence } from 'framer-motion';
 import { useAuth } from './contexts/SupabaseAuthContext.jsx';
 import { SOSProvider } from './contexts/SOSContext.jsx';
-import useWindowSize from '@/hooks/useWindowSize.js';
+import { StealthModeProvider } from '@/context/StealthModeContext.jsx';
+import useWindowSize from '@/hooks/useWindowSize';
+import { useInactivityMonitor } from '@/hooks/useInactivityMonitor';
 import ProtectedRoute from '@/components/ProtectedRoute.jsx';
 import SOSButton from '@/components/SOSButton.jsx';
 import '@/styles/android-fixes.css';
@@ -39,9 +41,10 @@ import BibliotecaPublica from '@/pages/BibliotecaPublica.jsx';
 import MisLibros from '@/pages/MisLibros.jsx';
 import NuevoLibro from '@/pages/NuevoLibro.jsx';
 import LeerLibro from '@/pages/LeerLibro.jsx';
+import EscribeTuLibro from '@/pages/EscribeTuLibro.jsx';
+import SafeScreen from '@/components/safety/SafeScreen.jsx';
 import PodcastPage from '@/pages/PodcastPage.jsx';
 import ProfilePage from '@/pages/ProfilePage.jsx';
-import EmprendeEnCasa from '@/pages/EmprendeEnCasa.jsx';
 import BienestarCompleto from '@/pages/BienestarCompleto.jsx';
 import TherapistDirectoryPage from '@/pages/TherapistDirectoryPage.jsx';
 import PersonalAgendaPage from '@/pages/PersonalAgendaPage.jsx';
@@ -54,6 +57,11 @@ import ZinhaInformaPage from '@/pages/ZinhaInformaPage.jsx';
 import DatabaseTest from '@/components/DatabaseTest.jsx';
 import EmailConfirmationHelper from '@/components/EmailConfirmationHelper.jsx';
 import PublicTracking from '@/pages/PublicTracking.jsx';
+// ⭐ NUEVAS PÁGINAS AL-E
+import CirculoConfianza from '@/pages/CirculoConfianza.jsx';
+import MisSecretos from '@/pages/MisSecretos.jsx';
+import SalidasProgramadas from '@/pages/SalidasProgramadas.jsx';
+import ALEDashboard from '@/pages/ALEDashboard.jsx';
 // import S3TestPage from '@/pages/S3TestPage.jsx'; // 🛠️ TEMP: Deshabilitado hasta mover S3 al backend
 
 // Componentes de administración
@@ -87,17 +95,22 @@ const AppRoutes = () => (
     <Route path="/prevencion" element={<ProtectedRoute><PreventionModule /></ProtectedRoute>} />
     <Route path="/holistica" element={<ProtectedRoute><HolisticZone /></ProtectedRoute>} />
     
+    {/* ⭐ NUEVOS MÓDULOS AL-E */}
+    <Route path="/circulo" element={<ProtectedRoute><CirculoConfianza /></ProtectedRoute>} />
+    <Route path="/mis-secretos" element={<ProtectedRoute><MisSecretos /></ProtectedRoute>} />
+    <Route path="/salidas" element={<ProtectedRoute><SalidasProgramadas /></ProtectedRoute>} />
+    <Route path="/ale-dashboard" element={<ProtectedRoute><ALEDashboard /></ProtectedRoute>} />
+    <Route path="/safe-screen" element={<SafeScreen />} />
+    
     {/* Módulo Escribe tu Libro */}
     <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPublica /></ProtectedRoute>} />
+    <Route path="/escribir-libro" element={<ProtectedRoute><EscribeTuLibro /></ProtectedRoute>} />
     <Route path="/mis-libros" element={<ProtectedRoute><MisLibros /></ProtectedRoute>} />
     <Route path="/nuevo-libro" element={<ProtectedRoute><NuevoLibro /></ProtectedRoute>} />
     <Route path="/leer/:bookId" element={<ProtectedRoute><LeerLibro /></ProtectedRoute>} />
     
     <Route path="/podcast" element={<ProtectedRoute><PodcastPage /></ProtectedRoute>} />
     <Route path="/diario-emocional" element={<ProtectedRoute><DiarioPersonal /></ProtectedRoute>} />
-    <Route path="/emprende" element={<ProtectedRoute><EmprendeEnCasa /></ProtectedRoute>} />
-    {/* Legacy: redirección suave desde la ruta antigua */}
-    <Route path="/sexualidad" element={<Navigate to="/emprende" replace />} />
     <Route path="/directorio-terapeutas" element={<ProtectedRoute><TherapistDirectoryPage /></ProtectedRoute>} />
     <Route path="/agenda" element={<ProtectedRoute><PersonalAgendaPage /></ProtectedRoute>} />
     <Route path="/referidos" element={<ProtectedRoute><ReferralPage /></ProtectedRoute>} />
@@ -140,10 +153,22 @@ const AuthRoutes = () => {
 
 // --- COMPONENTE PRINCIPAL DE LA APP ---
 function AppContent() {
-  const { session, loading } = useAuth();
+  const { session, loading, user } = useAuth();
   const { width } = useWindowSize(); // Volvemos a usar el hook
   const isMobileView = width < 1024;
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // 🔥 KCE: Activar monitoreo de inactividad
+  useInactivityMonitor();
+
+  // 🔥 KCE: Inicializar check-ins manager cuando el usuario esté autenticado
+  useEffect(() => {
+    if (user) {
+      import('@/services/checkInsManager').then(({ default: checkInsManager }) => {
+        checkInsManager.initialize(user.id);
+      });
+    }
+  }, [user]);
 
   const location = useLocation();
   const isAuthPage = ['/login', '/register', '/reset-password', '/pricing', '/legal'].includes(location.pathname);
@@ -230,5 +255,9 @@ function AppContent() {
 
 // --- PUNTO DE ENTRADA FINAL ---
 export default function App() {
-  return <AppContent />;
+  return (
+    <StealthModeProvider>
+      <AppContent />
+    </StealthModeProvider>
+  );
 }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       

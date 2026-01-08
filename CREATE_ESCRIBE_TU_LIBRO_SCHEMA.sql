@@ -234,28 +234,34 @@ ALTER TABLE ebook_orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE moderation_logs ENABLE ROW LEVEL SECURITY;
 
 -- BOOKS: solo dueña puede ver/editar sus libros privados
+DROP POLICY IF EXISTS "Usuarias pueden ver sus propios libros" ON books;
 CREATE POLICY "Usuarias pueden ver sus propios libros"
   ON books FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Usuarias pueden crear libros" ON books;
 CREATE POLICY "Usuarias pueden crear libros"
   ON books FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Usuarias pueden actualizar sus libros" ON books;
 CREATE POLICY "Usuarias pueden actualizar sus libros"
   ON books FOR UPDATE
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Usuarias pueden eliminar sus libros" ON books;
 CREATE POLICY "Usuarias pueden eliminar sus libros"
   ON books FOR DELETE
   USING (auth.uid() = user_id);
 
 -- BOOKS PÚBLICOS: lectura pública solo de libros published
+DROP POLICY IF EXISTS "Libros publicados son públicos" ON books;
 CREATE POLICY "Libros publicados son públicos"
   ON books FOR SELECT
   USING (estado = 'published');
 
 -- CHAPTERS: solo dueña puede ver/editar
+DROP POLICY IF EXISTS "Usuarias pueden ver capítulos de sus libros" ON chapters;
 CREATE POLICY "Usuarias pueden ver capítulos de sus libros"
   ON chapters FOR SELECT
   USING (
@@ -266,6 +272,7 @@ CREATE POLICY "Usuarias pueden ver capítulos de sus libros"
     )
   );
 
+DROP POLICY IF EXISTS "Usuarias pueden crear capítulos en sus libros" ON chapters;
 CREATE POLICY "Usuarias pueden crear capítulos en sus libros"
   ON chapters FOR INSERT
   WITH CHECK (
@@ -276,6 +283,7 @@ CREATE POLICY "Usuarias pueden crear capítulos en sus libros"
     )
   );
 
+DROP POLICY IF EXISTS "Usuarias pueden actualizar capítulos de sus libros" ON chapters;
 CREATE POLICY "Usuarias pueden actualizar capítulos de sus libros"
   ON chapters FOR UPDATE
   USING (
@@ -286,6 +294,7 @@ CREATE POLICY "Usuarias pueden actualizar capítulos de sus libros"
     )
   );
 
+DROP POLICY IF EXISTS "Usuarias pueden eliminar capítulos de sus libros" ON chapters;
 CREATE POLICY "Usuarias pueden eliminar capítulos de sus libros"
   ON chapters FOR DELETE
   USING (
@@ -297,6 +306,7 @@ CREATE POLICY "Usuarias pueden eliminar capítulos de sus libros"
   );
 
 -- CHAPTERS PÚBLICOS: lectura de capítulos published de libros published
+DROP POLICY IF EXISTS "Capítulos publicados son públicos" ON chapters;
 CREATE POLICY "Capítulos publicados son públicos"
   ON chapters FOR SELECT
   USING (
@@ -309,41 +319,50 @@ CREATE POLICY "Capítulos publicados son públicos"
   );
 
 -- REACTIONS: cualquiera puede dar reacciones (autenticado)
+DROP POLICY IF EXISTS "Usuarias pueden crear reacciones" ON reactions;
 CREATE POLICY "Usuarias pueden crear reacciones"
   ON reactions FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Usuarias pueden ver todas las reacciones" ON reactions;
 CREATE POLICY "Usuarias pueden ver todas las reacciones"
   ON reactions FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Usuarias pueden eliminar sus reacciones" ON reactions;
 CREATE POLICY "Usuarias pueden eliminar sus reacciones"
   ON reactions FOR DELETE
   USING (auth.uid() = user_id);
 
 -- RATINGS: cualquiera puede calificar (autenticado)
+DROP POLICY IF EXISTS "Usuarias pueden crear calificaciones" ON ratings;
 CREATE POLICY "Usuarias pueden crear calificaciones"
   ON ratings FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Usuarias pueden ver todas las calificaciones" ON ratings;
 CREATE POLICY "Usuarias pueden ver todas las calificaciones"
   ON ratings FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "Usuarias pueden actualizar sus calificaciones" ON ratings;
 CREATE POLICY "Usuarias pueden actualizar sus calificaciones"
   ON ratings FOR UPDATE
   USING (auth.uid() = user_id);
 
 -- EBOOK ORDERS: solo dueña puede ver sus pedidos
+DROP POLICY IF EXISTS "Usuarias pueden ver sus pedidos" ON ebook_orders;
 CREATE POLICY "Usuarias pueden ver sus pedidos"
   ON ebook_orders FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Usuarias pueden crear pedidos" ON ebook_orders;
 CREATE POLICY "Usuarias pueden crear pedidos"
   ON ebook_orders FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
 -- BOOK PUBLICATIONS: lectura pública
+DROP POLICY IF EXISTS "Publicaciones públicas son visibles" ON book_publications;
 CREATE POLICY "Publicaciones públicas son visibles"
   ON book_publications FOR SELECT
   USING (visibility = 'public');

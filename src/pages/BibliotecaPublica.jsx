@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { 
   Book, BookOpen, Heart, Star, Eye, Clock, 
-  Filter, Search, Loader2, Sparkles, Users
+  Filter, Search, Loader2, Sparkles, Users, PenTool
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getReacciones, getPromedioCalificacion } from '@/lib/booksService';
@@ -139,9 +139,16 @@ const BibliotecaPublica = () => {
           >
             📚 Biblioteca KUNNA
           </h1>
-          <p className="text-[#f5e6ff]/70 text-sm">
+          <p className="text-[#f5e6ff]/70 text-sm mb-4">
             Historias reales de mujeres que han decidido compartir su verdad
           </p>
+          <Button
+            onClick={() => navigate('/escribir-libro')}
+            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white flex items-center gap-2"
+          >
+            <PenTool className="w-4 h-4" />
+            Escribir mi libro
+          </Button>
         </motion.div>
 
         {/* Filtros */}

@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import supabase from '@/lib/customSupabaseClient';
 import preciseLocationService from '@/lib/preciseLocationService';
+import videoSOSService from '@/services/videoSOSService';
+import aleObserver from '@/services/aleObserver';
 
 export default function BotonAuxilio() {
   const [grabando, setGrabando] = useState(false);
@@ -245,6 +247,50 @@ Precisión: ${Math.round(position.accuracy)}m (${position.source})
         // No alertamos al usuario, es secundario
       }
 
+      setMensaje('✅ ¡Alerta enviada exitosamente!');
+      
+      // ⭐ NUEVO: Grabar video de evidencia (opcional, no bloquea el flujo principal)
+      try {
+        setMensaje('🎥 Grabando video de evidencia...');
+        
+        // Verificar soporte
+        if (videoSOSService.constructor.isSupported()) {
+          // Obtener ID de acompañamiento actual o crear uno
+          let acompanamientoId = null;
+          const { data: acomp } = await supabase
+            .from('acompanamientos')
+            .select('id')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+          
+          acompanamientoId = acomp?.id;
+          
+          if (acompanamientoId) {
+            const videoResult = await videoSOSService.grabarYSubir(
+              user.id,
+              acompanamientoId,
+              { latitude: lat, longitude: lon, accuracy: position.accuracy },
+              { duration: 8, facingMode: 'user' }
+            );
+            
+            console.log('✅ Video de evidencia grabado:', videoResult);
+            
+            // Registrar evento en AL-E
+            aleObserver.trackSOSActivation(
+              { latitude: lat, longitude: lon },
+              'manual_with_video'
+            );
+          }
+        } else {
+          console.log('⚠️ Grabación de video no soportada en este dispositivo');
+        }
+      } catch (videoError) {
+        console.error('⚠️ Error grabando video (no crítico):', videoError);
+        // No interrumpir el flujo principal
+      }
+      
       setMensaje('✅ ¡Alerta enviada exitosamente!');
       
       // Limpiar mensaje después de 3 segundos

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import useWindowSize from '@/hooks/useWindowSize.js';
+import useWindowSize from '@/hooks/useWindowSize';
 
 const DesktopDevInfo = () => {
   const { width, height } = useWindowSize();

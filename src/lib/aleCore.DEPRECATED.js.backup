@@ -1,0 +1,162 @@
+/**
+ * AL-E CORE - Motor Central de IA
+ * 
+ * Cliente para interactuar con api.al-eon.com
+ * Todas las funciones de IA de KUNNA pasan por aquí
+ */
+
+const ALE_BASE_URL = import.meta.env.VITE_ALE_CORE_BASE || 'https://api.al-eon.com';
+const WORKSPACE_ID = import.meta.env.VITE_WORKSPACE_ID || 'core';
+const DEFAULT_MODE = import.meta.env.VITE_DEFAULT_MODE || 'universal';
+
+class ALECore {
+  constructor() {
+    this.baseURL = ALE_BASE_URL;
+    this.workspaceId = WORKSPACE_ID;
+    this.mode = DEFAULT_MODE;
+  }
+
+  /**
+   * Solicitud genérica a AL-E
+   */
+  async request(endpoint, data = {}, options = {}) {
+    try {
+      const response = await fetch(`${this.baseURL}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers
+        },
+        body: JSON.stringify({
+          workspace_id: this.workspaceId,
+          mode: this.mode,
+          ...data
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`AL-E Error: ${response.status} ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('❌ AL-E Core Error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Analizar texto (moderación, sentimiento, intención)
+   */
+  async analyzeText(text, context = {}) {
+    return this.request('/analyze/text', {
+      text,
+      context,
+      tasks: ['moderation', 'sentiment', 'intent']
+    });
+  }
+
+  /**
+   * Moderar contenido (comentarios, chat)
+   */
+  async moderateContent(content, contentType = 'text') {
+    return this.request('/moderation/check', {
+      content,
+      content_type: contentType,
+      strict_mode: true
+    });
+  }
+
+  /**
+   * Analizar contexto de usuario
+   */
+  async analyzeUserContext(userId, events = [], history = {}) {
+    return this.request('/analyze/context', {
+      user_id: userId,
+      events,
+      history,
+      analyze: ['patterns', 'anomalies', 'risk']
+    });
+  }
+
+  /**
+   * Decidir escalamiento de emergencia
+   */
+  async decideEscalation(situation) {
+    return this.request('/guardian/escalate', {
+      situation,
+      factors: {
+        location: situation.location,
+        time_elapsed: situation.timeElapsed,
+        user_state: situation.userState,
+        previous_events: situation.previousEvents
+      }
+    });
+  }
+
+  /**
+   * Generar interpretación holística personalizada
+   */
+  async interpretHolistic(data, userProfile) {
+    return this.request('/holistic/interpret', {
+      data,
+      user_profile: userProfile,
+      tone: 'warm',
+      language: 'es-MX',
+      approach: 'empowering'
+    });
+  }
+
+  /**
+   * Analizar patrones de comportamiento
+   */
+  async analyzePatterns(userId, timeframe = '7d') {
+    return this.request('/patterns/analyze', {
+      user_id: userId,
+      timeframe,
+      analyze: ['routines', 'deviations', 'risk_indicators']
+    });
+  }
+
+  /**
+   * Generar respuesta conversacional
+   */
+  async generateResponse(message, context = {}) {
+    return this.request('/conversation/respond', {
+      message,
+      context,
+      personality: 'guardian',
+      tone: 'caring'
+    });
+  }
+
+  /**
+   * Verificar check-in de salida programada
+   */
+  async verifyCheckIn(scheduledExit, checkInData) {
+    return this.request('/guardian/check-in', {
+      scheduled_exit: scheduledExit,
+      check_in: checkInData,
+      decide_action: true
+    });
+  }
+
+  /**
+   * Analizar riesgo de situación
+   */
+  async assessRisk(situation) {
+    return this.request('/risk/assess', {
+      situation,
+      return_level: true, // low, medium, high, critical
+      return_actions: true
+    });
+  }
+}
+
+// Instancia singleton
+const aleCore = new ALECore();
+
+export default aleCore;
+
+// Exportar también la clase para testing
+export { ALECore };

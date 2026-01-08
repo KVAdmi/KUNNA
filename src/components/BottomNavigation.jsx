@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Shield, Sparkles, Users, User, Briefcase, Podcast, BookMarked, Library, Heart } from 'lucide-react';
+import { Home, Shield, Sparkles, Users, User, Podcast, BookMarked, Library, Heart, Brain, MessageCircle, Lock } from 'lucide-react';
 import useWindowSize from '@/hooks/useWindowSize';
 
 const BottomNavigation = () => {
@@ -13,7 +13,7 @@ const BottomNavigation = () => {
     { path: '/seguridad', icon: Shield, label: 'Seguridad' },
     { path: '/comunidad', icon: Users, label: 'Comunidad' },
     { path: '/holistica', icon: Sparkles, label: 'Holística' },
-    { path: '/emprende', icon: Briefcase, label: 'Emprende' },
+    { path: '/mis-secretos', icon: Lock, label: 'Secretos' },
     { path: '/perfil', icon: User, label: 'Perfil' },
   ];
   
@@ -21,8 +21,11 @@ const BottomNavigation = () => {
     { path: '/', icon: Home, label: 'Inicio' },
     { path: '/seguridad', icon: Shield, label: 'Seguridad' },
     { path: '/holistica', icon: Sparkles, label: 'Holística' },
-    { path: '/emprende', icon: Briefcase, label: 'Emprende' },
     { path: '/comunidad', icon: Users, label: 'Comunidad' },
+    { path: '/circulo', icon: MessageCircle, label: 'Mi Círculo' },
+    { path: '/mis-secretos', icon: Lock, label: 'Mis Secretos' },
+    { path: '/ale-dashboard', icon: Brain, label: 'AL-E Dashboard' },
+    { path: '/salidas', icon: BookMarked, label: 'Mis Salidas' },
     { path: '/diario-emocional', icon: BookMarked, label: 'Diario' },
     { path: '/biblioteca', icon: Library, label: 'Biblioteca' },
     { path: '/podcast', icon: Podcast, label: 'Escucha' },

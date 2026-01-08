@@ -10,6 +10,7 @@ import { es } from 'date-fns/locale';
 import { format, startOfMonth, endOfMonth, isValid } from 'date-fns';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
 import supabase from '@/lib/customSupabaseClient';
+import { kceEvents } from '@/core/kce';
 
 const EmotionalJournal = () => {
   const { toast } = useToast();
@@ -91,6 +92,14 @@ const EmotionalJournal = () => {
         toast({ title: 'Entrada guardada', description: `Tu diario para el ${format(selectedDate, 'PPP', { locale: es })} ha sido actualizado.` });
         setEntries(prev => ({...prev, [dateKey]: {...prev[dateKey], ...entryData}}));
         setIsEditing(false);
+        
+        // 🔥 INTEGRACIÓN KCE: Emitir evento de entrada de diario
+        try {
+          await kceEvents.diaryEntry(user.id, entryText.trim());
+        } catch (kceError) {
+          console.error('Error enviando evento al KCE:', kceError);
+          // No mostrar error al usuario, es background
+        }
     }
     setIsLoading(false);
   };

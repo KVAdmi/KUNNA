@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Shield, Heart, Users, BookOpen, Activity, Sparkles, Library, BookMarked, User, Briefcase, LifeBuoy, MessageSquare, Podcast, FolderHeart as HomeIcon, ChevronUp, ChevronDown } from 'lucide-react';
+import { Shield, Heart, Users, BookOpen, Activity, Sparkles, Library, BookMarked, User, LifeBuoy, MessageSquare, Podcast, FolderHeart as HomeIcon, ChevronUp, ChevronDown } from 'lucide-react';
 import useWindowSize from '@/hooks/useWindowSize';
 
 const TopHeader = () => {
@@ -43,7 +43,6 @@ const TopHeader = () => {
     '/podcast': { title: 'Escucha a KUNNA', icon: Podcast },
     '/diario-emocional': { title: 'Diario Emocional', icon: BookMarked },
     '/perfil': { title: 'Mi Perfil', icon: User },
-    '/emprende': { title: 'Emprende en Casa', icon: Briefcase },
   };
 
   const currentDetails = pageDetails[location.pathname] || { title: 'KUNNA' };

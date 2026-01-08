@@ -5,6 +5,8 @@ import { Share } from '@capacitor/share';
 import { supabase } from '../config/supabaseClient.js';
 import permissionsService from '../lib/permissionsService.js';
 import preciseLocationService from '../lib/preciseLocationService.js';
+import aleGuardian from '../services/aleGuardian.js';
+import aleObserver from '../services/aleObserver.js';
 
 const AUDIO_INTERVAL = 120000; // 2 minutos
 
@@ -52,10 +54,15 @@ export function SOSProvider({ children }) {
       await permissionsService.requestAllSOSPermissions();
       const position = await preciseLocationService.getCurrentPosition({ enableHighAccuracy: true, timeout: 10000 });
       const userId = (await supabase.auth.getUser()).data.user?.id;
+      
+      // Registrar evento en AL-E Observer
+      aleObserver.trackSOSActivation(userId, position, 'manual');
+      
       const { data, error } = await supabase.rpc('iniciar_seguimiento_tiempo_real_v2', { p_user_id: userId });
       if (error) throw error;
       setToken(data.token);
       await sendWhatsAppAlert(data.url, position, data.token);
+      
       if (Capacitor.getPlatform() === 'android') {
         await LocalNotifications.schedule({
           notifications: [{
@@ -66,9 +73,19 @@ export function SOSProvider({ children }) {
           }]
         });
       }
+      
       await preciseLocationService.startBackgroundTaskWatch({ token: data.token });
+      
+      // Iniciar monitoreo de escalamiento con AL-E Guardian
+      aleGuardian.iniciarMonitoreo({
+        userId,
+        emergencyId: data.token,
+        location: position,
+        type: 'sos_manual'
+      }).catch(err => console.error('[SOS] Error AL-E Guardian:', err));
+      
       setIsActive(true);
-      console.log('[SOS] Activo');
+      console.log('[SOS] Activo + AL-E Guardian monitoreando');
     } catch (error) {
       console.error('[SOS] Error:', error);
       alert(`Error SOS: ${error.message}`);
@@ -78,6 +95,14 @@ export function SOSProvider({ children }) {
   const stopSOS = async (pinReal = true) => {
     try {
       if (pinReal) {
+        const userId = (await supabase.auth.getUser()).data.user?.id;
+        
+        // Detener monitoreo de AL-E Guardian
+        aleGuardian.detenerMonitoreo();
+        
+        // Registrar resolución en AL-E Observer
+        aleObserver.trackSOSResolution(userId, token, 'manual_stop');
+        
         await supabase.rpc('detener_seguimiento', { p_token: token });
         await preciseLocationService.stopBackgroundTaskWatch();
         if (trackingTask) clearInterval(trackingTask);
@@ -86,6 +111,7 @@ export function SOSProvider({ children }) {
         }
         setIsActive(false);
         setToken(null);
+        console.log('[SOS] Detenido');
       }
     } catch (error) {
       console.error('[SOS] Error stop:', error);

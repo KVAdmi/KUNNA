@@ -19,6 +19,15 @@
   to = "/sw.js"
   status = 200
 
+# ===== NETLIFY FUNCTIONS CONFIG =====
+[functions]
+  node_bundler = "esbuild"
+  
+# ===== SCHEDULED FUNCTIONS =====
+[[scheduled_functions]]
+  path = "/.netlify/functions/inactivity-scan"
+  schedule = "*/15 * * * *"
+
 # 2) Redirecciones para subdominios
 [[redirects]]
   from = "https://appzinha.com/tracking/*"

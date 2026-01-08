@@ -1,15 +1,16 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, Shield, Sparkles, Briefcase, Users, BookMarked, Library, Heart, User, GraduationCap, Calendar } from 'lucide-react';
+import { Home, Shield, Sparkles, Users, BookMarked, Library, Heart, User, GraduationCap, Calendar, MessageCircle, Lock } from 'lucide-react';
 import TopHeader from '@/components/TopHeader.jsx';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Inicio' },
   { path: '/seguridad', icon: Shield, label: 'Seguridad' },
   { path: '/comunidad', icon: Users, label: 'Comunidad' },
-  { path: '/holistica', icon: Sparkles, label: 'Holística' },
-  { path: '/emprende', icon: Briefcase, label: 'Emprende en Casa' },
+  { path: '/circulo', icon: MessageCircle, label: 'Mi Círculo' },
+  { path: '/mis-secretos', icon: Lock, label: 'Mis Secretos' },
+  { path: '/holística', icon: Sparkles, label: 'Holística' },
   { path: '/biblioteca', icon: Library, label: 'Biblioteca' },
   { path: '/diario-emocional', icon: BookMarked, label: 'Diario' },
   { path: '/bienestar', icon: Heart, label: 'Bienestar' },

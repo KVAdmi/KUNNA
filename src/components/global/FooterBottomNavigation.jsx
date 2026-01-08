@@ -1,6 +1,6 @@
 // ✅ FooterBottomNavigation.jsx - SOS CON TRACKING REAL
 import React, { useState } from 'react';
-import { AlertTriangle, PhoneCall, User, Home } from 'lucide-react';
+import { AlertTriangle, PhoneCall, User, Home, Brain } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/SupabaseAuthContext';
@@ -35,6 +35,12 @@ const FooterBottomNavigation = () => {
       titulo: isFollowing ? 'Detener' : 'SOS',
       onClick: handleSOS,
       disabled: false
+    },
+    {
+      icono: <Brain size={24} color="white" />,
+      color: 'var(--brand-dark-blue)',
+      titulo: 'AL-E',
+      onClick: () => navigate('/ale-dashboard'),
     },
     {
       icono: <PhoneCall size={24} color="white" />,
