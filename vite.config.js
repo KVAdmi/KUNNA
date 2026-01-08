@@ -48,7 +48,7 @@ export default defineConfig({
           'vendor-supabase': ['@supabase/supabase-js'],
           'vendor-ui': ['framer-motion', 'lucide-react'],
           'ale-services': [
-            './src/lib/aleCore.js',
+            './src/services/eventsClient.js',
             './src/services/aleObserver.js',
             './src/services/aleAnalyzer.js',
             './src/services/aleGuardian.js'
